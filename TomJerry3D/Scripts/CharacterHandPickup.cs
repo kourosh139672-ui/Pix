@@ -29,7 +29,11 @@ public class CharacterHandPickup : MonoBehaviour
         if (Physics.Raycast(view.position, view.forward, out RaycastHit hit, reach, itemMask, QueryTriggerInteraction.Ignore))
         {
             CarryableItem item = hit.collider.GetComponentInParent<CarryableItem>();
-            if (item == null) return;
+            if (item == null)
+            {
+                hit.collider.SendMessageUpwards("Interact", SendMessageOptions.DontRequireReceiver);
+                return;
+            }
             held = item;
             Rigidbody rb = held.GetComponent<Rigidbody>();
             if (rb != null) { rb.isKinematic = true; rb.useGravity = false; }
