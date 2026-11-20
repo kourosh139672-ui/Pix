@@ -12,6 +12,13 @@ public class FridgeFoodDispenser : MonoBehaviour
     [SerializeField] private float openAngle = 105f;
     private bool isOpen;
 
+    public void Configure(Transform fridgeDoor, Transform spawnPoint, GameObject food)
+    {
+        door = fridgeDoor;
+        foodSpawn = spawnPoint;
+        foodPrefab = food;
+    }
+
     public void Interact()
     {
         isOpen = !isOpen;
