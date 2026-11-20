@@ -51,5 +51,13 @@ public class CharacterHandPickup : MonoBehaviour
         if (rb != null) { rb.isKinematic = false; rb.useGravity = true; }
     }
 
+    public CarryableItem ReleaseHeldForPlacement()
+    {
+        CarryableItem item = held;
+        held = null;
+        if (item != null) item.transform.SetParent(null, true);
+        return item;
+    }
+
     public bool HasItem => held != null;
 }
