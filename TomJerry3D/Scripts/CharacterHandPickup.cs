@@ -26,11 +26,12 @@ public class CharacterHandPickup : MonoBehaviour
     {
         if (held != null) { Drop(); return; }
         if (view == null) view = Camera.main != null ? Camera.main.transform : transform;
-        if (Physics.Raycast(view.position, view.forward, out RaycastHit hit, reach, itemMask, QueryTriggerInteraction.Ignore))
+        if (Physics.Raycast(view.position, view.forward, out RaycastHit hit, reach, itemMask, QueryTriggerInteraction.Collide))
         {
             CarryableItem item = hit.collider.GetComponentInParent<CarryableItem>();
             if (item == null)
             {
+                hit.collider.SendMessageUpwards("PlaceHeldBait", this, SendMessageOptions.DontRequireReceiver);
                 hit.collider.SendMessageUpwards("Interact", SendMessageOptions.DontRequireReceiver);
                 return;
             }
