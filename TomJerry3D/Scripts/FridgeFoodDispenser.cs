@@ -27,7 +27,7 @@ public class FridgeFoodDispenser : MonoBehaviour
         if (isOpen && foodPrefab != null)
         {
             Transform spawn = foodSpawn != null ? foodSpawn : transform;
-            Instantiate(foodPrefab, spawn.position, spawn.rotation);
+            GameObject food = Instantiate(foodPrefab, spawn.position, spawn.rotation);\n            food.SetActive(true);
         }
     }
 }
