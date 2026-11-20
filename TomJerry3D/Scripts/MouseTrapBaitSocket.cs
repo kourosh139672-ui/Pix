@@ -41,7 +41,8 @@ public class MouseTrapBaitSocket : MonoBehaviour
     // Call this from a UI action after the held food is selected.
     public void PlaceHeldBait(CharacterHandPickup carrier)
     {
-        if (carrier == null || carrier.HasItem == false) return;
-        // For direct mobile integration, use PlaceBait with the selected CarryableItem.
+        if (carrier == null || !carrier.HasItem || bait != null) return;
+        CarryableItem item = carrier.ReleaseHeldForPlacement();
+        PlaceBait(item);
     }
 }
