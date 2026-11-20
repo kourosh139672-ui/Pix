@@ -51,9 +51,9 @@ public class TomHouseChaos : MonoBehaviour
         agent.isStopped = false;
         agent.SetDestination(outsidePoint.position);
         float timer = 0f;
-        while (timer < 12f && agent.pathPending == false &&
-               (agent.hasPath && agent.remainingDistance > 0.8f))
+        while (timer < 12f)
         {
+            if (!agent.pathPending && (!agent.hasPath || agent.remainingDistance <= 0.8f)) break;
             timer += Time.deltaTime;
             yield return null;
         }
