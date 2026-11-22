@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 /// <summary>A mousetrap only catches Tom while a CarryableItem is installed as bait.</summary>
 public class MouseTrapBaitSocket : MonoBehaviour
@@ -8,8 +9,11 @@ public class MouseTrapBaitSocket : MonoBehaviour
     [SerializeField] private float stunSeconds = 4f;
     [SerializeField] private bool consumeBait = true;
     private CarryableItem bait;
+    private bool tomWasCaught;
+    [SerializeField] private UnityEvent onTomCaught;
 
     public bool IsArmed => bait != null;
+    public bool WasTriggered => tomWasCaught;
 
     public void Configure(Transform socket, CatAI cat)
     {
@@ -33,7 +37,10 @@ public class MouseTrapBaitSocket : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!IsArmed || tom == null || other.GetComponentInParent<CatAI>() != tom) return;
+        if (tomWasCaught) return;
+        tomWasCaught = true;
         tom.Stun(stunSeconds);
+        onTomCaught?.Invoke();
         if (consumeBait)
         {
             Destroy(bait.gameObject);
