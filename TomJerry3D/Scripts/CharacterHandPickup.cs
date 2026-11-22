@@ -12,6 +12,12 @@ public class CharacterHandPickup : MonoBehaviour
     [SerializeField] private LayerMask itemMask = ~0;
     private CarryableItem held;
 
+    public void Configure(Transform viewTransform, Transform socket)
+    {
+        view = viewTransform;
+        handSocket = socket;
+    }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.E)) Interact();
@@ -24,17 +30,31 @@ public class CharacterHandPickup : MonoBehaviour
 
     public void Interact()
     {
-        if (held != null) { Drop(); return; }
         if (view == null) view = Camera.main != null ? Camera.main.transform : transform;
-        if (Physics.Raycast(view.position, view.forward, out RaycastHit hit, reach, itemMask, QueryTriggerInteraction.Collide))
+
+        // When carrying food, aiming at a bait socket places the food there.
+        if (held != null)
+        {
+            if (Physics.Raycast(view.position, view.forward, out RaycastHit targetHit,
+                    reach, itemMask, QueryTriggerInteraction.Collide))
+            {
+                targetHit.collider.SendMessageUpwards("PlaceHeldBait", this, SendMessageOptions.DontRequireReceiver);
+                if (!HasItem) return;
+            }
+            Drop();
+            return;
+        }
+
+        if (Physics.Raycast(view.position, view.forward, out RaycastHit hit,
+                reach, itemMask, QueryTriggerInteraction.Collide))
         {
             CarryableItem item = hit.collider.GetComponentInParent<CarryableItem>();
             if (item == null)
             {
-                hit.collider.SendMessageUpwards("PlaceHeldBait", this, SendMessageOptions.DontRequireReceiver);
                 hit.collider.SendMessageUpwards("Interact", SendMessageOptions.DontRequireReceiver);
                 return;
             }
+
             held = item;
             Rigidbody rb = held.GetComponent<Rigidbody>();
             if (rb != null) { rb.isKinematic = true; rb.useGravity = false; }
