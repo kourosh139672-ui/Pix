@@ -3,15 +3,20 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// Creates a simple Android HUD at runtime: left movement joystick,
-/// right swipe-look area and an Interact button.
-/// Add this component to any active scene object.
+/// Runtime Android HUD: left movement joystick, right swipe-look area and USE button.
+/// Add to an active scene object or let PlayableHouseDemo add it automatically.
 /// </summary>
 public class MobileFirstPersonHUD : MonoBehaviour
 {
     [SerializeField] private MousePlayerController player;
     [SerializeField] private CharacterHandPickup pickup;
     [SerializeField] private bool buildOnStart = true;
+
+    public void Configure(MousePlayerController target, CharacterHandPickup handPickup)
+    {
+        player = target;
+        pickup = handPickup;
+    }
 
     private void Start()
     {
@@ -40,7 +45,6 @@ public class MobileFirstPersonHUD : MonoBehaviour
         }
 
         EnsureEventSystem();
-
         GameObject root = new GameObject("Generated Mobile HUD",
             typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
         root.transform.SetParent(transform, false);
@@ -53,7 +57,6 @@ public class MobileFirstPersonHUD : MonoBehaviour
         scaler.referenceResolution = new Vector2(1920, 1080);
         scaler.matchWidthOrHeight = 0.5f;
 
-        // Left movement joystick.
         Image joystickBase = MakeImage("Move Joystick", root.transform,
             new Vector2(0.14f, 0.16f), new Vector2(150, 150),
             new Color(0.08f, 0.10f, 0.14f, 0.42f));
@@ -61,17 +64,13 @@ public class MobileFirstPersonHUD : MonoBehaviour
             new Vector2(0.5f, 0.5f), new Vector2(64, 64),
             new Color(0.88f, 0.91f, 0.96f, 0.78f));
         joystickHandle.raycastTarget = false;
-        TouchControlPad movePad = joystickBase.gameObject.AddComponent<TouchControlPad>();
-        movePad.Configure(player, false, joystickHandle.rectTransform);
+        joystickBase.gameObject.AddComponent<TouchControlPad>().Configure(player, false, joystickHandle.rectTransform);
 
-        // Right-side swipe surface for first-person camera look.
         Image lookArea = MakeImage("Look Area", root.transform,
             new Vector2(0.77f, 0.55f), new Vector2(600, 650),
             new Color(1f, 1f, 1f, 0.015f));
-        TouchControlPad lookPad = lookArea.gameObject.AddComponent<TouchControlPad>();
-        lookPad.Configure(player, true);
+        lookArea.gameObject.AddComponent<TouchControlPad>().Configure(player, true);
 
-        // Interact button: pick up/drop objects and operate the fridge.
         if (pickup != null)
         {
             Image buttonImage = MakeImage("Interact Button", root.transform,
@@ -99,8 +98,7 @@ public class MobileFirstPersonHUD : MonoBehaviour
         Debug.Log("Tom & Jerry 3D mobile HUD created.");
     }
 
-    private static Image MakeImage(string objectName, Transform parent, Vector2 anchor,
-        Vector2 size, Color color)
+    private static Image MakeImage(string objectName, Transform parent, Vector2 anchor, Vector2 size, Color color)
     {
         GameObject obj = new GameObject(objectName, typeof(RectTransform), typeof(Image));
         obj.transform.SetParent(parent, false);
