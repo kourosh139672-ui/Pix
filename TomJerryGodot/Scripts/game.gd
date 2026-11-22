@@ -146,7 +146,9 @@ func _decorate_tom(root: Node3D) -> void:
 	tail.mesh = tail_mesh
 	tail.position = Vector3(0, 0.12, 0.58)
 	tail.rotation_degrees = Vector3(65, 0, 0)
-	tail.material_override = root.get_child(0).material_override
+	var tail_material := StandardMaterial3D.new()
+	tail_material.albedo_color = Color(0.5, 0.53, 0.58)
+	tail.material_override = tail_material
 	root.add_child(tail)
 
 func _add_sphere(parent: Node3D, pos: Vector3, scale_value: Vector3, tint: Color) -> void:
