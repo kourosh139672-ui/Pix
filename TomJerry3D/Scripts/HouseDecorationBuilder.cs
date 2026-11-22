@@ -28,6 +28,9 @@ public class HouseDecorationBuilder : MonoBehaviour
         BuildDiningSet();
         BuildPlants();
         BuildCeilingBeams();
+        BuildCeilingLights();
+        BuildWallClock();
+        BuildKitchenDetails();
     }
 
     private void BuildWindows()
@@ -139,6 +142,88 @@ public class HouseDecorationBuilder : MonoBehaviour
         for (int i = -1; i <= 1; i++)
             Cube("Ceiling Decorative Beam", new Vector3(i * 7.5f, 3.18f, 0f),
                 new Vector3(0.16f, 0.18f, 19.2f), wood);
+    }
+
+    private void BuildCeilingLights()
+    {
+        for (int i = -1; i <= 1; i++)
+        {
+            Vector3 p = new Vector3(i * 7.0f, 2.88f, -1.0f);
+            GameObject shade = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            shade.name = "Warm Ceiling Lamp Shade";
+            shade.transform.SetParent(transform, false);
+            shade.transform.position = p;
+            shade.transform.localScale = new Vector3(0.72f, 0.12f, 0.72f);
+            shade.GetComponent<Renderer>().sharedMaterial = frame;
+
+            GameObject bulb = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            bulb.name = "Ceiling Lamp Bulb";
+            bulb.transform.SetParent(transform, false);
+            bulb.transform.position = p + Vector3.down * 0.16f;
+            bulb.transform.localScale = Vector3.one * 0.22f;
+            bulb.GetComponent<Renderer>().sharedMaterial = canvas;
+
+            GameObject lightObject = new GameObject("Warm Room Light");
+            lightObject.transform.SetParent(transform, false);
+            lightObject.transform.position = p + Vector3.down * 0.28f;
+            Light point = lightObject.AddComponent<Light>();
+            point.type = LightType.Point;
+            point.color = new Color(1f, 0.78f, 0.52f);
+            point.intensity = 0.65f;
+            point.range = 7f;
+            point.shadows = LightShadows.None;
+        }
+    }
+
+    private void BuildWallClock()
+    {
+        Vector3 center = new Vector3(1.18f, 2.25f, 6.8f);
+        GameObject clock = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        clock.name = "Kitchen Wall Clock";
+        clock.transform.SetParent(transform, false);
+        clock.transform.position = center;
+        clock.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+        clock.transform.localScale = new Vector3(0.72f, 0.10f, 0.72f);
+        clock.GetComponent<Renderer>().sharedMaterial = frame;
+
+        GameObject face = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        face.name = "Clock Face";
+        face.transform.SetParent(transform, false);
+        face.transform.position = center + Vector3.back * 0.065f;
+        face.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+        face.transform.localScale = new Vector3(0.59f, 0.035f, 0.59f);
+        face.GetComponent<Renderer>().sharedMaterial = canvas;
+    }
+
+    private void BuildKitchenDetails()
+    {
+        // Small food jars and a fruit bowl make the counter feel lived in.
+        for (int i = 0; i < 3; i++)
+        {
+            GameObject jar = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            jar.name = "Kitchen Pantry Jar";
+            jar.transform.SetParent(transform, false);
+            jar.transform.position = new Vector3(5.2f + i * 0.75f, 2.02f, -8.05f);
+            jar.transform.localScale = new Vector3(0.28f, 0.34f, 0.28f);
+            jar.GetComponent<Renderer>().sharedMaterial = i == 1 ? glass : frame;
+        }
+
+        GameObject bowl = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        bowl.name = "Fruit Bowl";
+        bowl.transform.SetParent(transform, false);
+        bowl.transform.position = new Vector3(6.7f, 1.98f, -4.3f);
+        bowl.transform.localScale = new Vector3(0.9f, 0.20f, 0.58f);
+        bowl.GetComponent<Renderer>().sharedMaterial = pot;
+
+        for (int i = 0; i < 3; i++)
+        {
+            GameObject fruit = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            fruit.name = "Counter Fruit";
+            fruit.transform.SetParent(transform, false);
+            fruit.transform.position = new Vector3(6.35f + i * 0.32f, 2.14f, -4.3f + (i % 2) * 0.16f);
+            fruit.transform.localScale = Vector3.one * 0.22f;
+            fruit.GetComponent<Renderer>().sharedMaterial = i == 1 ? leaf : canvas;
+        }
     }
 
     private GameObject Cube(string label, Vector3 position, Vector3 scale, Material material)
