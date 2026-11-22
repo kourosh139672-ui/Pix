@@ -13,7 +13,8 @@ Full steps and controls: [GAMEPLAY_SETUP.md](GAMEPLAY_SETUP.md).
 
 ## Included gameplay
 - First-person mouse movement and camera look.
-- Runtime Android HUD with movement joystick, swipe-look and USE button.
+- Runtime Android HUD with movement joystick, swipe-look, objective/cheese counter and USE button.
+- Start screen plus pause overlay with Resume and Restart controls.
 - Procedurally generated connected house and runtime NavMesh.
 - Procedural cartoon cat placeholder with patrol, sight detection, chase and search.
 - Carry/drop items, kitchen fridge food dispenser and baitable mousetrap.
