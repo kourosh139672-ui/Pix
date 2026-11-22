@@ -16,6 +16,7 @@ Full steps, Android export and controls: [GAMEPLAY_SETUP.md](GAMEPLAY_SETUP.md).
 - Runtime Android HUD with movement joystick, swipe-look, objective/cheese counter and USE button.
 - Start screen plus pause overlay with Resume and Restart controls.
 - Procedurally generated connected house and runtime NavMesh.
+- Generated house decoration: framed windows, wall pictures, dining table and chairs, indoor plants and ceiling beams.
 - Procedural cartoon Tom and Jerry components, lightweight motion, and Tom patrol/sight/chase/search AI.
 - Mission progression, generated sound cues and LOW / MED / HIGH graphics presets.
 - Carry/drop items, kitchen fridge food dispenser and baitable mousetrap.
