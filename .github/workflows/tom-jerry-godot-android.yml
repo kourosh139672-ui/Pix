@@ -35,7 +35,6 @@ jobs:
           echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
           echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
 
-          # Always install into the exact SDK directory that Godot will use.
           if [ -x "$SDK/cmdline-tools/latest/bin/sdkmanager" ]; then
             SDKMANAGER="$SDK/cmdline-tools/latest/bin/sdkmanager"
           else
@@ -44,14 +43,16 @@ jobs:
           test -n "$SDKMANAGER"
           chmod +x "$SDKMANAGER"
           yes | "$SDKMANAGER" --sdk_root="$SDK" --licenses >/dev/null 2>&1 || true
-          "$SDKMANAGER" --sdk_root="$SDK" "cmdline-tools;latest" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-          # Fail early with a useful message if the packages went into another SDK.
-          test -d "$SDK/platforms/android-35"
-          test -x "$SDK/build-tools/35.0.0/aapt"
-          test -x "$SDK/build-tools/35.0.0/aapt2"
-          ls -la "$SDK/build-tools"
-          ls -la "$SDK/platforms"
+          # Godot 4.4.1's Android exporter reliably selects Build Tools 33.0.2.
+          # Match the export preset's target SDK to this installed toolchain.
+          "$SDKMANAGER" --sdk_root="$SDK" "cmdline-tools;latest" "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+
+          test -d "$SDK/platforms/android-33"
+          test -x "$SDK/build-tools/33.0.2/aapt"
+          test -x "$SDK/build-tools/33.0.2/aapt2"
+          ls -la "$SDK/build-tools/33.0.2"
+          ls -la "$SDK/platforms/android-33"
 
           mkdir -p /root/.android /root/.config/godot
           if [ ! -f /root/.android/debug.keystore ]; then
@@ -66,24 +67,30 @@ jobs:
           EOF
           cat /root/.config/godot/editor_settings-4.tres
 
-      - name: Prepare Godot export templates
+      - name: Prepare and verify Godot Android export templates
         run: |
+          set -eux
           mkdir -p ~/.local/share/godot/export_templates
           if [ -d /root/.local/share/godot/export_templates/4.4.1.stable ]; then
             cp -a /root/.local/share/godot/export_templates/4.4.1.stable ~/.local/share/godot/export_templates/
           fi
+          TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/4.4.1.stable"
+          test -s "$TEMPLATE_DIR/android_debug.apk"
+          test -s "$TEMPLATE_DIR/android_release.apk"
+          ls -lh "$TEMPLATE_DIR/android_debug.apk" "$TEMPLATE_DIR/android_release.apk"
 
       - name: Import Godot project
         run: |
-          cd TomJerryGodot
-          godot --headless --editor --path . --quit
+          godot --headless --verbose --editor --path TomJerryGodot --quit
 
       - name: Export Android APK
         run: |
+          set -eux
           mkdir -p build/android
-          godot --headless --path TomJerryGodot --export-debug "Android" "$GITHUB_WORKSPACE/build/android/TomJerry3D.apk"
+          godot --headless --verbose --path TomJerryGodot --export-debug "Android" "$GITHUB_WORKSPACE/build/android/TomJerry3D.apk"
           test -s build/android/TomJerry3D.apk
           file build/android/TomJerry3D.apk
+          ls -lh build/android/TomJerry3D.apk
 
       - name: Upload installable APK
         uses: actions/upload-artifact@v4
