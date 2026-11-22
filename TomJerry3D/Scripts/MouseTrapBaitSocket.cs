@@ -1,9 +1,6 @@
 using UnityEngine;
 
-/// <summary>
-/// Add to a mousetrap with a trigger collider. Drop a CarryableItem into its bait socket
-/// (or call PlaceBait). Tom is caught only while bait is installed.
-/// </summary>
+/// <summary>A mousetrap only catches Tom while a CarryableItem is installed as bait.</summary>
 public class MouseTrapBaitSocket : MonoBehaviour
 {
     [SerializeField] private Transform baitSocket;
@@ -13,6 +10,12 @@ public class MouseTrapBaitSocket : MonoBehaviour
     private CarryableItem bait;
 
     public bool IsArmed => bait != null;
+
+    public void Configure(Transform socket, CatAI cat)
+    {
+        baitSocket = socket;
+        tom = cat;
+    }
 
     public void PlaceBait(CarryableItem item)
     {
@@ -38,7 +41,6 @@ public class MouseTrapBaitSocket : MonoBehaviour
         }
     }
 
-    // Call this from a UI action after the held food is selected.
     public void PlaceHeldBait(CharacterHandPickup carrier)
     {
         if (carrier == null || !carrier.HasItem || bait != null) return;
