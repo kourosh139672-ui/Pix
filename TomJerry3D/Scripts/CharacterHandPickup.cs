@@ -2,25 +2,30 @@ using UnityEngine;
 
 /// <summary>
 /// Add to Jerry or Tom. Assign a camera/eye transform and a hand socket.
-/// Call Interact() from a mobile button; keyboard E also works.
+/// Interact picks up or places food; ThrowHeld launches the carried item.
 /// </summary>
 public class CharacterHandPickup : MonoBehaviour
 {
     [SerializeField] private Transform view;
     [SerializeField] private Transform handSocket;
     [SerializeField] private float reach = 2.4f;
+    [SerializeField] private float throwForce = 5.5f;
+    [SerializeField] private float throwLift = 1.4f;
     [SerializeField] private LayerMask itemMask = ~0;
     private CarryableItem held;
+    private JerryHandVisual handVisual;
 
     public void Configure(Transform viewTransform, Transform socket)
     {
         view = viewTransform;
         handSocket = socket;
+        handVisual = socket != null ? socket.GetComponent<JerryHandVisual>() : null;
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.E)) Interact();
+        if (Input.GetKeyDown(KeyCode.G)) ThrowHeld();
         if (held != null && handSocket != null)
         {
             held.transform.position = handSocket.position;
@@ -32,7 +37,6 @@ public class CharacterHandPickup : MonoBehaviour
     {
         if (view == null) view = Camera.main != null ? Camera.main.transform : transform;
 
-        // When carrying food, aiming at a bait socket places the food there.
         if (held != null)
         {
             if (Physics.Raycast(view.position, view.forward, out RaycastHit targetHit,
@@ -57,10 +61,32 @@ public class CharacterHandPickup : MonoBehaviour
 
             held = item;
             Rigidbody rb = held.GetComponent<Rigidbody>();
-            if (rb != null) { rb.isKinematic = true; rb.useGravity = false; }
+            if (rb != null) { rb.velocity = Vector3.zero; rb.angularVelocity = Vector3.zero; rb.isKinematic = true; rb.useGravity = false; }
             Collider[] colliders = held.GetComponentsInChildren<Collider>();
             foreach (Collider c in colliders) c.enabled = false;
             held.transform.SetParent(handSocket != null ? handSocket : transform, true);
+            if (handVisual != null) handVisual.PlayPickupMotion();
+        }
+    }
+
+    public void ThrowHeld()
+    {
+        if (held == null) return;
+        CarryableItem item = held;
+        held = null;
+        item.transform.SetParent(null, true);
+        Collider[] colliders = item.GetComponentsInChildren<Collider>();
+        foreach (Collider c in colliders) c.enabled = true;
+        Rigidbody rb = item.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.useGravity = true;
+            Vector3 direction = view != null ? view.forward : transform.forward;
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.AddForce(direction * throwForce + Vector3.up * throwLift, ForceMode.VelocityChange);
+            rb.AddTorque(Random.insideUnitSphere * 2f, ForceMode.VelocityChange);
         }
     }
 
