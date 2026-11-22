@@ -123,6 +123,7 @@ public class PlayableHouseDemo : MonoBehaviour
         Light sun = sunObject.AddComponent<Light>();
         sun.type = LightType.Directional;
         sun.intensity = 1.1f;
+        sun.shadows = LightShadows.Soft;
     }
 
     private void WallSegment(string label, Vector3 center, Vector3 scale)
@@ -165,6 +166,7 @@ public class PlayableHouseDemo : MonoBehaviour
         GameObject hand = new GameObject("Jerry Hand Socket");
         hand.transform.SetParent(cameraObject.transform, false);
         hand.transform.localPosition = new Vector3(0.28f, -0.22f, 0.55f);
+        hand.AddComponent<JerryHandVisual>();
         CharacterHandPickup pickup = playerObject.AddComponent<CharacterHandPickup>();
         pickup.Configure(cameraObject.transform, hand.transform);
 
