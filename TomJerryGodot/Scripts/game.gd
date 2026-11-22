@@ -9,6 +9,11 @@ var camera: Camera3D
 var tom: CharacterBody3D
 var cheese_count := 0
 var snack_count := 0
+var fridge_door: Node3D
+var fridge_open := false
+var fridge_food_spawned := false
+var tom_visual: Node3D
+var animation_clock := 0.0
 var trap_baited := false
 var level_complete := false
 var game_over := false
@@ -62,7 +67,8 @@ func _build_world() -> void:
 	_make_box("Table leg 2", Vector3(5.4, 0.35, 0.9), Vector3(0.18, 0.9, 0.18), Color(0.3, 0.18, 0.1))
 	_make_box("Table leg 3", Vector3(3, 0.35, 2.1), Vector3(0.18, 0.9, 0.18), Color(0.3, 0.18, 0.1))
 	_make_box("Table leg 4", Vector3(5.4, 0.35, 2.1), Vector3(0.18, 0.9, 0.18), Color(0.3, 0.18, 0.1))
-	_make_box("Fridge", Vector3(-7.3, 1.4, -2.2), Vector3(1.2, 2.8, 1.3), Color(0.72, 0.82, 0.88))
+	_make_box("Fridge body", Vector3(-7.3, 1.4, -2.2), Vector3(1.2, 2.8, 1.3), Color(0.72, 0.82, 0.88))
+	_build_fridge_door()
 	_make_box("Rug", Vector3(3.5, 0.015, -2.5), Vector3(4.5, 0.04, 3.2), Color(0.58, 0.22, 0.18), false)
 
 func _make_box(label: String, pos: Vector3, dimensions: Vector3, tint: Color, solid := true) -> void:
@@ -92,6 +98,31 @@ func _make_box(label: String, pos: Vector3, dimensions: Vector3, tint: Color, so
 		root.add_child(collision)
 	add_child(root)
 
+
+
+func _build_fridge_door() -> void:
+	fridge_door = Node3D.new()
+	fridge_door.name = "FridgeDoorHinge"
+	fridge_door.position = Vector3(-7.3, 1.4, -1.53)
+	add_child(fridge_door)
+	var door := MeshInstance3D.new()
+	var door_mesh := BoxMesh.new()
+	door_mesh.size = Vector3(1.12, 2.65, 0.12)
+	door.mesh = door_mesh
+	var door_material := StandardMaterial3D.new()
+	door_material.albedo_color = Color(0.82, 0.9, 0.94)
+	door.material_override = door_material
+	door.position = Vector3(0, 0, 0.58)
+	fridge_door.add_child(door)
+	var handle := MeshInstance3D.new()
+	var handle_mesh := BoxMesh.new()
+	handle_mesh.size = Vector3(0.07, 0.75, 0.08)
+	handle.mesh = handle_mesh
+	var handle_material := StandardMaterial3D.new()
+	handle_material.albedo_color = Color(0.35, 0.42, 0.48)
+	handle.material_override = handle_material
+	handle.position = Vector3(0.42, 0, 0.5)
+	fridge_door.add_child(handle)
 
 func _build_house_details() -> void:
 	_make_box("Window frame", Vector3(0, 2.25, -6.78), Vector3(3.2, 1.7, 0.08), Color(0.28, 0.52, 0.68), false)
@@ -154,6 +185,9 @@ func _build_tom() -> void:
 	tom = CharacterBody3D.new()
 	tom.name = "Tom"
 	tom.position = Vector3(4.5, 0.65, -3.5)
+	tom_visual = Node3D.new()
+	tom_visual.name = "Visual"
+	tom.add_child(tom_visual)
 	var body_mesh := MeshInstance3D.new()
 	var capsule_mesh := CapsuleMesh.new()
 	capsule_mesh.radius = 0.48
@@ -162,8 +196,8 @@ func _build_tom() -> void:
 	var gray := StandardMaterial3D.new()
 	gray.albedo_color = Color(0.42, 0.45, 0.5)
 	body_mesh.material_override = gray
-	tom.add_child(body_mesh)
-	_decorate_tom(tom)
+	tom_visual.add_child(body_mesh)
+	_decorate_tom(tom_visual)
 	var collision := CollisionShape3D.new()
 	var body_shape := CapsuleShape3D.new()
 	body_shape.radius = 0.42
@@ -218,8 +252,15 @@ func _build_jerry_hand() -> void:
 		_add_sphere(hand, Vector3(-0.1 + i * 0.1, -0.08, -0.1), Vector3(0.045, 0.045, 0.11), Color(0.72, 0.56, 0.45))
 
 func _process(delta: float) -> void:
+	animation_clock += delta
 	for item in get_tree().get_nodes_in_group("spinning_cheese"):
 		item.rotate_y(delta * 1.4)
+	if is_instance_valid(tom_visual) and not level_complete:
+		tom_visual.position.y = 0.05 + absf(sin(animation_clock * 7.0)) * 0.09
+		tom_visual.rotation.z = sin(animation_clock * 3.5) * 0.035
+	if is_instance_valid(fridge_door):
+		var target_angle := -1.15 if fridge_open else 0.0
+		fridge_door.rotation.y = move_toward(fridge_door.rotation.y, target_angle, delta * 3.0)
 
 func _build_collectibles() -> void:
 	_add_cheese(Vector3(-3.5, 0.35, -4.2))
@@ -335,11 +376,21 @@ func _update_hud() -> void:
 func _on_use_pressed() -> void:
 	if level_complete or game_over:
 		return
+	if player.global_position.distance_to(Vector3(-7.3, 0.6, -2.2)) < 3.0:
+		fridge_open = not fridge_open
+		if fridge_open and not fridge_food_spawned:
+			fridge_food_spawned = true
+			_add_snack(Vector3(-6.2, 0.35, -0.7), "Fridge apple", Color(0.82, 0.16, 0.12))
+			_add_snack(Vector3(-7.7, 0.35, -0.55), "Fridge cheese snack", Color(0.96, 0.72, 0.18))
+		mission_label.text = "Fridge opened!" if fridge_open else "Fridge closed."
+		return
 	if cheese_count >= 3 and not trap_baited and player.global_position.distance_to(Vector3(-1.5, 0, -5.2)) < 3.0:
 		trap_baited = true
 		_update_hud()
 	elif cheese_count < 3:
 		mission_label.text = "You need 3 cheese pieces first!"
+	else:
+		mission_label.text = "Move closer to the mousetrap or fridge and tap USE."
 
 func _restart_level() -> void:
 	get_tree().reload_current_scene()
