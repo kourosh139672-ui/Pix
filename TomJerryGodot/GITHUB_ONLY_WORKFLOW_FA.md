@@ -6,7 +6,7 @@
 1. وارد مخزن GitHub و زبانه **Actions** شو.
 2. اجرای **Tom & Jerry Godot Web Build** را باز کن.
 3. منتظر بمان تا کارهای Export و Deploy تمام شوند؛ فقط اجرای سبز موفق محسوب می‌شود.
-4. برای انتشار عمومی، در **Settings → Pages → Build and deployment** گزینه **GitHub Actions** را به‌عنوان Source انتخاب کن.
+4. برای انتشار عمومی، در **Settings → Pages → Build and deployment** گزینه **GitHub Actions** را به‌عنوان Source انتخاب کن. سپس در **Settings → Secrets and variables → Actions → Variables** یک متغیر با نام `PAGES_ENABLED` و مقدار `true` بساز تا job انتشار فعال شود.
 5. پس از اجرای موفق Deploy، نشانی Pages در بخش Pages یا Deployments نمایش داده می‌شود.
 
 ## چه چیزی ساخته می‌شود؟
@@ -16,5 +16,5 @@
 
 ## وضعیت فنی
 - اجرای موفق Godot و خروجی وب هنوز باید در GitHub Actions تأیید شود.
-- تا قبل از سبز شدن workflow، لینک قابل‌بازی نداریم.
+- اگر Pages فعال نباشد، خروجی وب به‌صورت Artifact در اجرای موفق Actions ذخیره می‌شود؛ پس از فعال‌کردن Pages و متغیر بالا، انتشار خودکار انجام می‌شود. تا آن زمان لینک عمومی قابل‌بازی نداریم.
 - اولین اجرای ابری ممکن است به دریافت قالب خروجی و اینترنت runner نیاز داشته باشد.
