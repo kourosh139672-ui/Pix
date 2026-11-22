@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Creates a simple kitchen fridge with an opening door and edible objects to carry.
-/// Attach to the kitchen root and use a CharacterHandPickup ray to interact with the fridge.
+/// Attach to an empty object in the kitchen.
 /// </summary>
 public class KitchenFridgeBuilder : MonoBehaviour
 {
@@ -13,6 +13,8 @@ public class KitchenFridgeBuilder : MonoBehaviour
     private Material handleMat;
     private Material foodMat;
 
+    public void Configure(Vector3 localPosition) { position = localPosition; }
+
     private void Start()
     {
         if (buildOnStart) Build();
@@ -21,6 +23,7 @@ public class KitchenFridgeBuilder : MonoBehaviour
     [ContextMenu("Build Kitchen Fridge")]
     public void Build()
     {
+        if (transform.Find("KitchenFridge") != null) return;
         fridgeMat = MakeMat(new Color(0.82f, 0.86f, 0.90f));
         doorMat = MakeMat(new Color(0.93f, 0.95f, 0.97f));
         handleMat = MakeMat(new Color(0.35f, 0.40f, 0.46f));
@@ -36,8 +39,10 @@ public class KitchenFridgeBuilder : MonoBehaviour
         hinge.transform.SetParent(root.transform, false);
         hinge.transform.localPosition = new Vector3(-0.62f, 1.2f, 0.52f);
 
-        GameObject door = Cube("Fridge Door", hinge.transform, new Vector3(0.62f, 0, 0), new Vector3(1.25f, 2.3f, 0.12f), doorMat);
-        Cube("Door Handle", door.transform, new Vector3(0.42f, 0, 0.58f), new Vector3(0.08f, 0.72f, 0.08f), handleMat);
+        GameObject door = Cube("Fridge Door", hinge.transform, new Vector3(0.62f, 0, 0),
+            new Vector3(1.25f, 2.3f, 0.12f), doorMat);
+        Cube("Door Handle", door.transform, new Vector3(0.42f, 0, 0.58f),
+            new Vector3(0.08f, 0.72f, 0.08f), handleMat);
 
         GameObject spawn = new GameObject("Food Spawn");
         spawn.transform.SetParent(root.transform, false);
@@ -50,8 +55,7 @@ public class KitchenFridgeBuilder : MonoBehaviour
         food.AddComponent<CarryableItem>().itemName = "Cheese";
         food.SetActive(false);
 
-        var dispenser = root.AddComponent<FridgeFoodDispenser>();
-        dispenser.Configure(hinge.transform, spawn.transform, food);
+        root.AddComponent<FridgeFoodDispenser>().Configure(hinge.transform, spawn.transform, food);
     }
 
     private GameObject Cube(string label, Transform parent, Vector3 localPos, Vector3 scale, Material material)
