@@ -3,8 +3,7 @@ using UnityEngine.AI;
 
 /// <summary>
 /// Basic cat AI: patrols between points, chases the mouse when seen,
-/// then searches the last known position.
-/// Requires a baked NavMesh and a NavMeshAgent.
+/// then searches the last known position. Requires a baked/runtime NavMesh.
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 public class CatAI : MonoBehaviour
@@ -39,8 +38,17 @@ public class CatAI : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
     }
 
+    public void Configure(Transform target, Transform[] points)
+    {
+        player = target;
+        patrolPoints = points;
+        patrolIndex = 0;
+    }
+
     private void Update()
     {
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh) return;
+
         if (Time.time < stunnedUntil)
         {
             agent.isStopped = true;
@@ -72,8 +80,7 @@ public class CatAI : MonoBehaviour
                 break;
             case State.Search:
                 searchTimer -= Time.deltaTime;
-                if (searchTimer <= 0f)
-                    state = State.Patrol;
+                if (searchTimer <= 0f) state = State.Patrol;
                 break;
         }
     }
@@ -81,7 +88,6 @@ public class CatAI : MonoBehaviour
     private bool CanSeePlayer()
     {
         if (player == null) return false;
-
         Vector3 origin = transform.position + Vector3.up * eyeHeight;
         Vector3 target = player.position + Vector3.up * 0.5f;
         Vector3 toPlayer = target - origin;
@@ -101,7 +107,7 @@ public class CatAI : MonoBehaviour
         agent.speed = patrolSpeed;
         if (patrolPoints == null || patrolPoints.Length == 0) return;
 
-        if (!agent.pathPending && agent.remainingDistance <= arriveDistance)
+        if (!agent.pathPending && agent.hasPath && agent.remainingDistance <= arriveDistance)
         {
             patrolIndex = (patrolIndex + 1) % patrolPoints.Length;
             if (patrolPoints[patrolIndex] != null)
@@ -123,5 +129,7 @@ public class CatAI : MonoBehaviour
     public void Stun(float seconds)
     {
         stunnedUntil = Mathf.Max(stunnedUntil, Time.time + Mathf.Max(0f, seconds));
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+            agent.isStopped = true;
     }
 }
