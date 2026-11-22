@@ -461,7 +461,7 @@ func _update_hud() -> void:
 		else:
 			mission_label.text = "Trap baited! Lead Tom to the trap."
 
-	func _on_use_pressed() -> void:
+func _on_use_pressed() -> void:
 	if level_complete or game_over:
 		return
 	if _try_pickup_throwable():
@@ -630,7 +630,7 @@ func _physics_process(delta: float) -> void:
 		_play_sfx([392.0, 311.13, 233.08, 174.61], 0.20, 0.25)
 		_update_hud()
 
-	func _update_tom(delta: float) -> void:
+func _update_tom(delta: float) -> void:
 	if not is_instance_valid(tom):
 		return
 	var target := player.global_position
