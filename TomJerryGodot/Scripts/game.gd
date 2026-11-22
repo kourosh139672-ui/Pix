@@ -97,7 +97,12 @@ func _build_world() -> void:
 	environment.background_color = Color(0.48, 0.68, 0.82)
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	environment.ambient_light_color = Color(0.72, 0.76, 0.82)
-	environment.ambient_light_energy = 0.8
+	environment.ambient_light_energy = 0.95
+	environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	environment.tonemap_exposure = 1.05
+	environment.fog_enabled = true
+	environment.fog_light_color = Color(0.67, 0.78, 0.86)
+	environment.fog_density = 0.003
 	env.environment = environment
 	add_child(env)
 
@@ -105,6 +110,7 @@ func _build_world() -> void:
 	sun.rotation_degrees = Vector3(-48, -32, 0)
 	sun.light_energy = 1.15
 	sun.shadow_enabled = true
+	sun.directional_shadow_max_distance = 32.0
 	add_child(sun)
 
 	_make_box("Floor", Vector3(0, -0.25, 0), Vector3(18, 0.5, 14), Color(0.66, 0.48, 0.31))
@@ -123,6 +129,9 @@ func _build_world() -> void:
 	_make_box("Fridge body", Vector3(-7.3, 1.4, -2.2), Vector3(1.2, 2.8, 1.3), Color(0.72, 0.82, 0.88))
 	_build_fridge_door()
 	_make_box("Rug", Vector3(3.5, 0.015, -2.5), Vector3(4.5, 0.04, 3.2), Color(0.58, 0.22, 0.18), false)
+	_make_box("Back wall baseboard", Vector3(0, 0.12, -6.78), Vector3(17.7, 0.22, 0.12), Color(0.48, 0.29, 0.18), false)
+	_make_box("Left wall baseboard", Vector3(-8.78, 0.12, 0), Vector3(0.12, 0.22, 13.7), Color(0.48, 0.29, 0.18), false)
+	_make_box("Right wall baseboard", Vector3(8.78, 0.12, 0), Vector3(0.12, 0.22, 13.7), Color(0.48, 0.29, 0.18), false)
 
 func _make_box(label: String, pos: Vector3, dimensions: Vector3, tint: Color, solid := true) -> void:
 	var root: Node3D
@@ -186,6 +195,20 @@ func _build_house_details() -> void:
 	_make_box("Kitchen island", Vector3(-5.2, 0.55, 1.4), Vector3(2.4, 1.1, 1.5), Color(0.55, 0.34, 0.22))
 	_make_box("Chair seat", Vector3(2.6, 0.55, 3.1), Vector3(0.9, 0.16, 0.9), Color(0.48, 0.28, 0.14))
 	_make_box("Chair back", Vector3(2.6, 1.05, 3.5), Vector3(0.9, 1.0, 0.14), Color(0.48, 0.28, 0.14))
+	_make_box("Window center mullion", Vector3(0, 2.25, -6.70), Vector3(0.09, 1.55, 0.06), Color(0.92, 0.88, 0.77), false)
+	_make_box("Window crossbar", Vector3(0, 2.25, -6.69), Vector3(3.0, 0.08, 0.06), Color(0.92, 0.88, 0.77), false)
+	_make_box("Cupboard left door", Vector3(-3.18, 1.08, -5.73), Vector3(0.88, 1.72, 0.07), Color(0.65, 0.39, 0.22), false)
+	_make_box("Cupboard right door", Vector3(-2.22, 1.08, -5.73), Vector3(0.88, 1.72, 0.07), Color(0.65, 0.39, 0.22), false)
+	_make_box("Cupboard handle left", Vector3(-2.78, 1.08, -5.67), Vector3(0.045, 0.28, 0.05), Color(0.82, 0.72, 0.48), false)
+	_make_box("Cupboard handle right", Vector3(-2.62, 1.08, -5.67), Vector3(0.045, 0.28, 0.05), Color(0.82, 0.72, 0.48), false)
+	var ceiling_lamp := OmniLight3D.new()
+	ceiling_lamp.name = "WarmCeilingLamp"
+	ceiling_lamp.position = Vector3(0, 3.55, 0)
+	ceiling_lamp.light_color = Color(1.0, 0.82, 0.61)
+	ceiling_lamp.light_energy = 0.65
+	ceiling_lamp.omni_range = 11.0
+	add_child(ceiling_lamp)
+	_make_box("Lamp shade", Vector3(0, 3.72, 0), Vector3(0.75, 0.16, 0.75), Color(0.96, 0.82, 0.56), false)
 	_add_snack(Vector3(-5.0, 1.45, 1.4), "Apple", Color(0.82, 0.16, 0.12))
 	_add_snack(Vector3(5.8, 0.95, -4.4), "Cookie", Color(0.72, 0.48, 0.24))
 	_add_throwable_pickup(Vector3(4.2, 1.35, 1.5), "Squeaky Ball", Color(0.24, 0.78, 0.48), false)
@@ -299,6 +322,20 @@ func _decorate_tom(root: Node3D) -> void:
 	_add_sphere(root, Vector3(-0.13, 0.72, -0.46), Vector3(0.035, 0.055, 0.025), Color(0.08, 0.08, 0.1))
 	_add_sphere(root, Vector3(0.13, 0.72, -0.46), Vector3(0.035, 0.055, 0.025), Color(0.08, 0.08, 0.1))
 	_add_sphere(root, Vector3(0, 0.58, -0.46), Vector3(0.07, 0.045, 0.035), Color(0.88, 0.55, 0.62))
+	_add_sphere(root, Vector3(-0.23, 0.98, -0.205), Vector3(0.085, 0.14, 0.035), Color(0.91, 0.57, 0.65))
+	_add_sphere(root, Vector3(0.23, 0.98, -0.205), Vector3(0.085, 0.14, 0.035), Color(0.91, 0.57, 0.65))
+	_add_sphere(root, Vector3(-0.075, 0.49, -0.445), Vector3(0.09, 0.055, 0.035), Color(0.82, 0.58, 0.58))
+	_add_sphere(root, Vector3(0.075, 0.49, -0.445), Vector3(0.09, 0.055, 0.035), Color(0.82, 0.58, 0.58))
+	_add_sphere(root, Vector3(-0.48, 0.10, -0.12), Vector3(0.18, 0.22, 0.2), Color(0.42, 0.45, 0.5))
+	_add_sphere(root, Vector3(0.48, 0.10, -0.12), Vector3(0.18, 0.22, 0.2), Color(0.42, 0.45, 0.5))
+	_add_sphere(root, Vector3(-0.24, -0.55, 0.05), Vector3(0.19, 0.18, 0.25), Color(0.42, 0.45, 0.5))
+	_add_sphere(root, Vector3(0.24, -0.55, 0.05), Vector3(0.19, 0.18, 0.25), Color(0.42, 0.45, 0.5))
+	_add_visual_box(root, Vector3(-0.28, 0.63, -0.475), Vector3(0.32, 0.018, 0.025), Color(0.94, 0.94, 0.88))
+	_add_visual_box(root, Vector3(0.28, 0.63, -0.475), Vector3(0.32, 0.018, 0.025), Color(0.94, 0.94, 0.88))
+	_add_visual_box(root, Vector3(-0.27, 0.56, -0.48), Vector3(0.28, 0.014, 0.02), Color(0.94, 0.94, 0.88))
+	_add_visual_box(root, Vector3(0.27, 0.56, -0.48), Vector3(0.28, 0.014, 0.02), Color(0.94, 0.94, 0.88))
+	_add_visual_box(root, Vector3(-0.25, 0.30, -0.25), Vector3(0.16, 0.035, 0.22), Color(0.28, 0.30, 0.34))
+	_add_visual_box(root, Vector3(0.25, 0.30, -0.25), Vector3(0.16, 0.035, 0.22), Color(0.28, 0.30, 0.34))
 	var tail := MeshInstance3D.new()
 	var tail_mesh := CapsuleMesh.new()
 	tail_mesh.radius = 0.075
@@ -310,6 +347,19 @@ func _decorate_tom(root: Node3D) -> void:
 	tail_material.albedo_color = Color(0.5, 0.53, 0.58)
 	tail.material_override = tail_material
 	root.add_child(tail)
+
+
+func _add_visual_box(parent: Node3D, pos: Vector3, dimensions: Vector3, tint: Color) -> void:
+	var item := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = dimensions
+	item.mesh = mesh
+	item.position = pos
+	var material := StandardMaterial3D.new()
+	material.albedo_color = tint
+	material.roughness = 0.72
+	item.material_override = material
+	parent.add_child(item)
 
 func _add_sphere(parent: Node3D, pos: Vector3, scale_value: Vector3, tint: Color) -> void:
 	var item := MeshInstance3D.new()
@@ -411,18 +461,27 @@ func _build_hud() -> void:
 	layer.add_child(root)
 
 	cheese_label = Label.new()
-	cheese_label.position = Vector2(22, 18)
-	cheese_label.add_theme_font_size_override("font_size", 28)
+	cheese_label.position = Vector2(28, 22)
+	cheese_label.add_theme_font_size_override("font_size", 24)
+	cheese_label.add_theme_color_override("font_color", Color(1.0, 0.93, 0.68))
+	cheese_label.add_theme_color_override("font_outline_color", Color(0.12, 0.16, 0.22, 0.95))
+	cheese_label.add_theme_constant_override("outline_size", 5)
 	root.add_child(cheese_label)
 
 	mission_label = Label.new()
-	mission_label.position = Vector2(22, 58)
-	mission_label.add_theme_font_size_override("font_size", 22)
+	mission_label.position = Vector2(28, 60)
+	mission_label.add_theme_font_size_override("font_size", 18)
+	mission_label.add_theme_color_override("font_color", Color(0.96, 0.98, 1.0))
+	mission_label.add_theme_color_override("font_outline_color", Color(0.08, 0.12, 0.18, 0.95))
+	mission_label.add_theme_constant_override("outline_size", 4)
 	root.add_child(mission_label)
 
 	hint_label = Label.new()
 	hint_label.text = "LEFT SIDE: MOVE     RIGHT SIDE: LOOK"
-	hint_label.position = Vector2(22, -42)
+	hint_label.position = Vector2(24, -42)
+	hint_label.add_theme_color_override("font_color", Color(0.93, 0.96, 1.0))
+	hint_label.add_theme_color_override("font_outline_color", Color(0.08, 0.12, 0.18, 0.95))
+	hint_label.add_theme_constant_override("outline_size", 4)
 	hint_label.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
 	hint_label.add_theme_font_size_override("font_size", 18)
 	root.add_child(hint_label)
@@ -441,9 +500,29 @@ func _make_hud_button(parent: Control, caption: String, offset: Vector2) -> Butt
 	button.size = Vector2(132, 58)
 	button.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
 	button.position = offset
-	button.add_theme_font_size_override("font_size", 20)
+	button.add_theme_font_size_override("font_size", 18)
+	button.add_theme_color_override("font_color", Color(0.98, 0.99, 1.0))
+	button.add_theme_color_override("font_hover_color", Color(1.0, 0.93, 0.66))
+	button.add_theme_color_override("font_pressed_color", Color(1.0, 1.0, 1.0))
+	button.add_theme_stylebox_override("normal", _button_style(Color(0.10, 0.22, 0.34, 0.94), Color(0.42, 0.72, 0.86)))
+	button.add_theme_stylebox_override("hover", _button_style(Color(0.15, 0.36, 0.48, 0.98), Color(0.78, 0.88, 0.65)))
+	button.add_theme_stylebox_override("pressed", _button_style(Color(0.06, 0.16, 0.25, 1.0), Color(1.0, 0.78, 0.32)))
+	button.add_theme_stylebox_override("disabled", _button_style(Color(0.22, 0.25, 0.29, 0.78), Color(0.38, 0.42, 0.46)))
 	parent.add_child(button)
 	return button
+
+
+func _button_style(fill: Color, edge: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.border_color = edge
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(14)
+	style.set_content_margin_all(10)
+	style.shadow_color = Color(0.02, 0.05, 0.08, 0.45)
+	style.shadow_size = 5
+	style.shadow_offset = Vector2(0, 3)
+	return style
 
 func _update_hud() -> void:
 	if cheese_label:
