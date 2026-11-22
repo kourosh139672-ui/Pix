@@ -14,6 +14,7 @@ public class TomJerryPolishDirector : MonoBehaviour
     private AudioSource audioSource;
     private int previousCheese;
     private bool previousArmed;
+    private bool previousCaught;
     private GameObject graphicsPanel;
     private Slider volumeSlider;
     private const string GraphicsKey = "TJ3D_GraphicsPreset";
@@ -44,6 +45,9 @@ public class TomJerryPolishDirector : MonoBehaviour
         bool armed = trap != null && trap.IsArmed;
         if (armed && !previousArmed) PlayTone(980f, 0.28f);
         previousArmed = armed;
+        bool caught = trap != null && trap.WasTriggered;
+        if (caught && !previousCaught) PlayVictoryCue();
+        previousCaught = caught;
         UpdateMission();
     }
 
@@ -121,12 +125,14 @@ public class TomJerryPolishDirector : MonoBehaviour
         if (missionText == null) return;
         int cheese = counter != null ? counter.TotalCheese : 0;
         bool armed = trap != null && trap.IsArmed;
-        if (armed)
-            missionText.text = "MISSION COMPLETE! Tom is in for a surprise!";
+        if (trap != null && trap.WasTriggered)
+            missionText.text = "LEVEL COMPLETE! Tom got caught!";
+        else if (armed)
+            missionText.text = "TRAP SET! Lure Tom onto the mousetrap!";
         else if (cheese >= cheeseGoal)
             missionText.text = "CHEESE READY! Carry it to the mousetrap and tap USE.";
         else
-            missionText.text = "MISSION: Collect cheese (" + cheese + "/" + cheeseGoal + ") and bait the mousetrap.";
+            missionText.text = "MISSION 1: Collect cheese (" + cheese + "/" + cheeseGoal + "), then bait the mousetrap.";
     }
 
     private void SetMasterVolume(float value)
@@ -149,6 +155,16 @@ public class TomJerryPolishDirector : MonoBehaviour
             PlayerPrefs.Save();
         }
     }
+
+    private void PlayVictoryCue()
+    {
+        PlayTone(660f, 0.12f);
+        Invoke(nameof(PlayVictorySecondNote), 0.14f);
+        Invoke(nameof(PlayVictoryThirdNote), 0.30f);
+    }
+
+    private void PlayVictorySecondNote() { PlayTone(830f, 0.12f); }
+    private void PlayVictoryThirdNote() { PlayTone(990f, 0.24f); }
 
     private void PlayTone(float frequency, float duration)
     {
