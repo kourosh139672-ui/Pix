@@ -1,22 +1,12 @@
-# Tom & Jerry 3D — Godot mobile prototype
+# Tom & Jerry 3D — Godot 4 browser-first project
 
-This is the new Godot 4 / GDScript port of the Tom & Jerry first-person mobile game. It is separate from the legacy Unity prototype in the TomJerry3D folder.
+The project lives in this folder and is maintained through GitHub. No game editor needs to be installed on the phone for the GitHub-based workflow.
 
-## Open on an Android phone
+## Play without installing a game editor
 
-1. Install the official Godot Engine Android Editor while online.
-2. Download/install the matching Godot export templates before going offline. Keep the editor and template versions identical.
-3. Download this repository as a ZIP (or clone it with a Git client) and extract the TomJerryGodot folder into device storage.
-4. Open Godot Android Editor → Import → select TomJerryGodot/project.godot.
-5. Open the project and run the Main scene. Use the left half of the screen to move and the right half to look.
-6. For APK export, create/select an Android export preset and use the matching prebuilt Android template. If using Gradle/custom builds, Godot's Android Build Environment (GABE) may also be required.
+A GitHub Actions workflow is configured at `.github/workflows/tom-jerry-godot-web.yml`. When files in this project change, GitHub's cloud runner attempts to export a browser build. If GitHub Pages is enabled for this repository with the GitHub Actions source, the workflow also publishes the web build.
 
-## Offline expectations
-
-- After the editor, project files, and matching export templates are present on the phone, ordinary editing and non-Gradle export can work without a network connection.
-- The first download/import of the editor and export templates requires internet.
-- Android editor features vary by Godot version. The Android editor uses GDScript; it does not support C#/Mono.
-- The Android editor has device/performance limitations. Use the Compatibility renderer and test on the actual phone.
+The browser build is intended to run on a compatible modern browser. It is not an Android APK.
 
 ## Current prototype features
 
@@ -24,9 +14,13 @@ This is the new Godot 4 / GDScript port of the Tom & Jerry first-person mobile g
 - First-person player controller.
 - Touch movement on the left half and swipe-look on the right half.
 - Keyboard/mouse fallback for desktop testing.
-- Tom pursuit behavior, collectible cheese, baitable trap and a simple win condition.
+- Cartoon-style placeholder Tom model and a first-person Jerry hand.
+- Tom pursuit behavior, collectible cheese, baitable trap and simple win/lose feedback.
 - Restart and mission HUD.
 
-## Important status
+## Honest status
 
-This is an initial Godot port/scaffold, not a complete conversion of all Unity gameplay systems. It uses simple placeholder geometry and basic AI. It has not yet been opened, run, profiled or exported in Godot in this repository workflow, so no APK is included yet.
+- The Godot project files, web export preset, and cloud workflow are committed.
+- The cloud workflow has to run successfully before a playable web link or downloadable build exists.
+- The project has not yet been validated by a successful Godot engine run. The current visuals use procedural placeholder geometry, not final character models or professional animation.
+- No APK is currently available. The current no-install target is a browser build.
