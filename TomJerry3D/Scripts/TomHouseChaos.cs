@@ -4,9 +4,8 @@ using UnityEngine.AI;
 using UnityEngine.Events;
 
 /// <summary>
-/// Cartoon slapstick: Tom knocks over tagged breakable props while moving quickly.
-/// After enough mess, the owner gives him a comic scolding and sends him outside briefly.
-/// No realistic damage or fighting is simulated.
+/// Cartoon slapstick: Tom bumps harmless props. After enough mess,
+/// an owner-scolding event fires and Tom takes a short trip outside before returning.
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 public class TomHouseChaos : MonoBehaviour
@@ -18,16 +17,26 @@ public class TomHouseChaos : MonoBehaviour
     [SerializeField] private float timeoutOutside = 6f;
     [SerializeField] private UnityEvent<int> onMessChanged;
     [SerializeField] private UnityEvent onOwnerScolds;
+
     private NavMeshAgent agent;
     private int mess;
     private float nextCheck;
     private bool beingSentOut;
+    private Vector3 homePosition;
 
-    private void Awake() { agent = GetComponent<NavMeshAgent>(); }
+    public void Configure(Transform exitPoint) { outsidePoint = exitPoint; }
+
+    private void Awake()
+    {
+        agent = GetComponent<NavMeshAgent>();
+        homePosition = transform.position;
+    }
 
     private void Update()
     {
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh) return;
         if (beingSentOut || Time.time < nextCheck || agent.velocity.magnitude < 1.2f) return;
+
         nextCheck = Time.time + checkEvery;
         Collider[] hits = Physics.OverlapSphere(transform.position, smashRadius);
         foreach (Collider hit in hits)
@@ -46,10 +55,12 @@ public class TomHouseChaos : MonoBehaviour
 
     private IEnumerator OwnerSendsTomOut()
     {
+        if (!agent.isOnNavMesh) yield break;
         beingSentOut = true;
         onOwnerScolds?.Invoke();
         agent.isStopped = false;
         agent.SetDestination(outsidePoint.position);
+
         float timer = 0f;
         while (timer < 12f)
         {
@@ -57,10 +68,13 @@ public class TomHouseChaos : MonoBehaviour
             timer += Time.deltaTime;
             yield return null;
         }
+
         agent.isStopped = true;
         yield return new WaitForSeconds(timeoutOutside);
-        transform.position = outsidePoint.position;
-        agent.Warp(outsidePoint.position);
+
+        if (NavMesh.SamplePosition(homePosition, out NavMeshHit homeHit, 2f, NavMesh.AllAreas))
+            agent.Warp(homeHit.position);
+
         agent.isStopped = false;
         mess = 0;
         onMessChanged?.Invoke(mess);
