@@ -42,6 +42,8 @@ jobs:
         run: |
           mkdir -p build/web
           godot --headless --path TomJerryGodot --export-debug "Web" "$GITHUB_WORKSPACE/build/web/index.html"
+          test -s build/web/index.html
+          find build/web -maxdepth 1 -type f -printf '%f %s bytes\\n'
 
       - name: Upload web build artifact
         uses: actions/upload-artifact@v4
@@ -56,6 +58,7 @@ jobs:
           path: build/web/
 
   deploy:
+    if: ${{ vars.PAGES_ENABLED == 'true' }}
     environment:
       name: github-pages
     runs-on: ubuntu-24.04
