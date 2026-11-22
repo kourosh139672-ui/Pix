@@ -68,8 +68,15 @@ public class PlayableHouseDemo : MonoBehaviour
         // Outside walls.
         Cube("North Outer Wall", houseRoot, new Vector3(0, wallHeight / 2f, 10f),
             new Vector3(24f, wallHeight, wallThickness), wallMat);
-        Cube("South Outer Wall", houseRoot, new Vector3(0, wallHeight / 2f, -10f),
-            new Vector3(24f, wallHeight, wallThickness), wallMat);
+        // Front entrance opening and a small porch make Tom's comic exit reachable.
+        Cube("South Wall Left", houseRoot, new Vector3(-6.6f, wallHeight / 2f, -10f),
+            new Vector3(10.8f, wallHeight, wallThickness), wallMat);
+        Cube("South Wall Right", houseRoot, new Vector3(6.6f, wallHeight / 2f, -10f),
+            new Vector3(10.8f, wallHeight, wallThickness), wallMat);
+        Cube("Front Door Lintel", houseRoot, new Vector3(0f, 2.95f, -10f),
+            new Vector3(2.4f, 0.9f, wallThickness), wallMat);
+        Cube("Front Porch Floor", houseRoot, new Vector3(0f, -0.16f, -11.4f),
+            new Vector3(6f, 0.32f, 3f), floorMat);
         Cube("East Outer Wall", houseRoot, new Vector3(12f, wallHeight / 2f, 0),
             new Vector3(wallThickness, wallHeight, 20f), wallMat);
         Cube("West Outer Wall", houseRoot, new Vector3(-12f, wallHeight / 2f, 0),
@@ -201,6 +208,10 @@ public class PlayableHouseDemo : MonoBehaviour
         patrol[3] = MakePoint("Tom Patrol Storage", new Vector3(8f, 0.05f, 6.5f));
         ai.Configure(player, patrol);
 
+        Transform porchExit = MakePoint("Tom Outside Timeout Point", new Vector3(0f, 0.05f, -11.5f));
+        TomHouseChaos chaos = tom.AddComponent<TomHouseChaos>();
+        chaos.Configure(porchExit);
+
         if (agent.isOnNavMesh) agent.Warp(tom.transform.position);
         return ai;
     }
@@ -267,6 +278,7 @@ public class PlayableHouseDemo : MonoBehaviour
         CreateBreakable("Breakable Vase", new Vector3(-2.2f, 0.45f, -2.1f), new Vector3(0.55f, 0.9f, 0.55f));
         CreateBreakable("Breakable Box", new Vector3(3.4f, 0.4f, 4.8f), new Vector3(0.8f, 0.8f, 0.8f));
         CreateBreakable("Breakable Stool", new Vector3(5.5f, 0.35f, -1.2f), new Vector3(0.75f, 0.7f, 0.75f));
+        CreateBreakable("Breakable Lamp", new Vector3(-8.5f, 0.65f, 2.8f), new Vector3(0.45f, 1.3f, 0.45f));
     }
 
     private void CreateBreakable(string label, Vector3 position, Vector3 scale)
@@ -282,7 +294,7 @@ public class PlayableHouseDemo : MonoBehaviour
             0, new List<NavMeshBuildMarkup>(), sources);
 
         NavMeshBuildSettings settings = NavMesh.GetSettingsByID(0);
-        Bounds bounds = new Bounds(new Vector3(0f, 1.5f, 0f), new Vector3(24f, 5f, 20f));
+        Bounds bounds = new Bounds(new Vector3(0f, 1.5f, 0f), new Vector3(24f, 5f, 26f));
         NavMeshData data = NavMeshBuilder.BuildNavMeshData(settings, sources, bounds,
             Vector3.zero, Quaternion.identity);
 
