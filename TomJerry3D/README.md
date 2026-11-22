@@ -1,28 +1,27 @@
-# TomJerry3D — Android game prototype
+# TomJerry3D — Android Unity prototype
 
-A Unity 3D first-person stealth/chase prototype. The player controls a small mouse exploring a house, collecting cheese and avoiding a roaming cat.
+A first-person 3D cartoon chase prototype. Play as a small mouse exploring a house while a cat patrols, spots the player, chases and searches.
 
-## Planned features
-- First-person mouse controller
-- Indoor house level: kitchen, living room, bedroom, hallway and storage room
-- Cat AI: patrol, detect, chase and search
-- Cheese collectibles and a simple counter
-- Traps that briefly stun the cat
-- Android-friendly controls and URP graphics
+## Included
+- First-person mouse movement and camera look
+- Runtime Android HUD: left movement joystick, right swipe-to-look area and USE button
+- Cat patrol/chase/search AI using Unity NavMesh
+- Procedural house blockout: living room, kitchen, hallway, bedroom and storage
+- Procedural placeholder mouse and cat characters
+- Cheese pickups and a counter
+- Carry/drop interactions, fridge food dispenser and baitable mousetrap
+- Cartoon slapstick: Tom knocks over harmless props and gets sent outside after making a mess
 
 ## Unity setup
-1. Install a Unity 6 LTS editor on a computer or a supported cloud build machine.
-2. Create a 3D URP project.
-3. Copy the contents of this folder into the project's Assets/TomJerry3D folder (or move the Scripts folder into Assets).
-4. Add a NavMesh Surface to the level, bake the NavMesh, and assign the player and cat references in the Inspector.
-5. Add a CharacterController to the player and a NavMeshAgent to the cat.
-6. Configure Android Build Support to build an APK.
-
-## Current status
-This repository contains starter C# scripts only. It does not yet contain a Unity scene, 3D models, animations, audio, baked NavMesh, or an APK. Those require Unity Editor and suitable assets/build tools.
+1. Open or create a Unity 3D URP project in Unity 6.
+2. Copy the TomJerry3D folder into Assets/.
+3. Follow GAMEPLAY_SETUP.md to wire the player camera, mobile HUD, NavMesh and gameplay components.
+4. Add original or properly licensed 3D assets, animations, sounds and scene lighting before release.
+5. Configure Android Build Support and build an APK from Unity Editor.
 
 ## Controls
-The movement script supports keyboard input in the Unity Editor and public methods that can be connected to on-screen Android joystick/buttons.
+- Android: left virtual joystick to move, swipe the right side to look, USE to interact/pick up/drop.
+- Unity Editor: WASD/arrow keys and mouse look; E to interact.
 
-## Original assets
-Use original or properly licensed character models, textures, sounds and animations. This prototype uses generic mouse/cat roles and does not include official Tom and Jerry assets.
+## Status
+This is a script-based prototype, not a ready-to-install APK. A Unity scene, final character models, animation rig, audio, baked NavMesh and device testing are still required.
