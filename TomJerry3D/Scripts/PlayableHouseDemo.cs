@@ -169,6 +169,7 @@ public class PlayableHouseDemo : MonoBehaviour
 
         MobileFirstPersonHUD hud = playerObject.AddComponent<MobileFirstPersonHUD>();
         hud.Configure(controller, pickup);
+        playerObject.AddComponent<PauseMenuHUD>();
         return playerObject.transform;
     }
 
