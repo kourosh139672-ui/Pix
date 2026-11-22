@@ -10,6 +10,7 @@ var tom: CharacterBody3D
 var cheese_count := 0
 var trap_baited := false
 var level_complete := false
+var game_over := false
 var move_touch_id := -1
 var look_touch_id := -1
 var move_origin := Vector2.ZERO
@@ -103,6 +104,7 @@ func _build_player() -> void:
 	camera.position = Vector3(0, 0.48, 0)
 	camera.current = true
 	player.add_child(camera)
+	_build_jerry_hand()
 	add_child(player)
 
 func _build_tom() -> void:
@@ -118,6 +120,7 @@ func _build_tom() -> void:
 	gray.albedo_color = Color(0.42, 0.45, 0.5)
 	body_mesh.material_override = gray
 	tom.add_child(body_mesh)
+	_decorate_tom(tom)
 	var collision := CollisionShape3D.new()
 	var body_shape := CapsuleShape3D.new()
 	body_shape.radius = 0.42
@@ -125,6 +128,53 @@ func _build_tom() -> void:
 	collision.shape = body_shape
 	tom.add_child(collision)
 	add_child(tom)
+
+
+func _decorate_tom(root: Node3D) -> void:
+	_add_sphere(root, Vector3(0, 0.68, -0.12), Vector3(0.38, 0.34, 0.34), Color(0.5, 0.53, 0.58))
+	_add_sphere(root, Vector3(-0.23, 0.98, -0.12), Vector3(0.16, 0.22, 0.12), Color(0.5, 0.53, 0.58))
+	_add_sphere(root, Vector3(0.23, 0.98, -0.12), Vector3(0.16, 0.22, 0.12), Color(0.5, 0.53, 0.58))
+	_add_sphere(root, Vector3(-0.13, 0.72, -0.42), Vector3(0.07, 0.09, 0.045), Color(0.95, 0.96, 0.88))
+	_add_sphere(root, Vector3(0.13, 0.72, -0.42), Vector3(0.07, 0.09, 0.045), Color(0.95, 0.96, 0.88))
+	_add_sphere(root, Vector3(-0.13, 0.72, -0.46), Vector3(0.035, 0.055, 0.025), Color(0.08, 0.08, 0.1))
+	_add_sphere(root, Vector3(0.13, 0.72, -0.46), Vector3(0.035, 0.055, 0.025), Color(0.08, 0.08, 0.1))
+	_add_sphere(root, Vector3(0, 0.58, -0.46), Vector3(0.07, 0.045, 0.035), Color(0.88, 0.55, 0.62))
+	var tail := MeshInstance3D.new()
+	var tail_mesh := CapsuleMesh.new()
+	tail_mesh.radius = 0.075
+	tail_mesh.height = 0.9
+	tail.mesh = tail_mesh
+	tail.position = Vector3(0, 0.12, 0.58)
+	tail.rotation_degrees = Vector3(65, 0, 0)
+	tail.material_override = root.get_child(0).material_override
+	root.add_child(tail)
+
+func _add_sphere(parent: Node3D, pos: Vector3, scale_value: Vector3, tint: Color) -> void:
+	var item := MeshInstance3D.new()
+	var sphere := SphereMesh.new()
+	sphere.radius = 0.5
+	sphere.height = 1.0
+	item.mesh = sphere
+	item.position = pos
+	item.scale = scale_value
+	var material := StandardMaterial3D.new()
+	material.albedo_color = tint
+	material.roughness = 0.8
+	item.material_override = material
+	parent.add_child(item)
+
+func _build_jerry_hand() -> void:
+	var hand := Node3D.new()
+	hand.name = "JerryHandView"
+	hand.position = Vector3(0.34, -0.32, -0.62)
+	camera.add_child(hand)
+	_add_sphere(hand, Vector3.ZERO, Vector3(0.16, 0.13, 0.2), Color(0.62, 0.48, 0.38))
+	for i in range(3):
+		_add_sphere(hand, Vector3(-0.1 + i * 0.1, -0.08, -0.1), Vector3(0.045, 0.045, 0.11), Color(0.72, 0.56, 0.45))
+
+func _process(delta: float) -> void:
+	for item in get_tree().get_nodes_in_group("spinning_cheese"):
+		item.rotate_y(delta * 1.4)
 
 func _build_collectibles() -> void:
 	_add_cheese(Vector3(-3.5, 0.35, -4.2))
@@ -135,6 +185,7 @@ func _add_cheese(pos: Vector3) -> void:
 	var area := Area3D.new()
 	area.position = pos
 	area.name = "Cheese"
+	area.add_to_group("spinning_cheese")
 	var mesh_instance := MeshInstance3D.new()
 	var mesh := PrismMesh.new()
 	mesh.size = Vector3(0.62, 0.42, 0.18)
@@ -227,6 +278,8 @@ func _update_hud() -> void:
 	if mission_label:
 		if level_complete:
 			mission_label.text = "LEVEL COMPLETE! Jerry outsmarted Tom!"
+		elif game_over:
+			mission_label.text = "TOM CAUGHT JERRY! Tap RESTART."
 		elif cheese_count < 3:
 			mission_label.text = "Find 3 pieces of cheese."
 		elif not trap_baited:
@@ -235,7 +288,7 @@ func _update_hud() -> void:
 			mission_label.text = "Trap baited! Lead Tom to the trap."
 
 func _on_use_pressed() -> void:
-	if level_complete:
+	if level_complete or game_over:
 		return
 	if cheese_count >= 3 and not trap_baited and player.global_position.distance_to(Vector3(-1.5, 0, -5.2)) < 3.0:
 		trap_baited = true
@@ -269,7 +322,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		pending_look += event.relative
 
 func _physics_process(delta: float) -> void:
-	if not is_instance_valid(player) or level_complete:
+	if not is_instance_valid(player) or level_complete or game_over:
 		return
 	var move_axis := Vector2.ZERO
 	if move_touch_id != -1:
@@ -292,6 +345,9 @@ func _physics_process(delta: float) -> void:
 		player.velocity.y = -0.2
 	player.move_and_slide()
 	_update_tom(delta)
+	if not trap_baited and tom.global_position.distance_to(player.global_position) < 1.05:
+		game_over = true
+		_update_hud()
 
 func _update_tom(delta: float) -> void:
 	if not is_instance_valid(tom):
