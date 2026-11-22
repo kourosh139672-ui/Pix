@@ -92,7 +92,7 @@ func _make_box(label: String, pos: Vector3, dimensions: Vector3, tint: Color, so
 func _build_player() -> void:
 	player = CharacterBody3D.new()
 	player.name = "JerryPlayer"
-	player.position = Vector3(0, 0.15, 4.5)
+	player.position = Vector3(0, 0.58, 4.5)
 	var shape_node := CollisionShape3D.new()
 	var capsule := CapsuleShape3D.new()
 	capsule.radius = 0.28
