@@ -17,8 +17,8 @@ This is a Unity C# prototype. The Editor command creates a saved scene; the scen
 - Objective HUD updates when Jerry collects cheese or carries food toward the mousetrap.
 - Start screen pauses the game until PLAY is tapped. PAUSE opens a pause overlay with RESUME and RESTART; Escape toggles pause in the Unity Editor.
 - Procedural cartoon Tom and Jerry models; Tom now has an alternating arm/leg walk cycle, body bounce, head and ear motion, a segmented tail wave and occasional blinking, alongside patrol/chase/search AI.
-- Mission progression: collect three cheese pieces, bait the mousetrap, and receive a completion message.
-- Generated sound cues for collecting cheese and arming the trap.
+- Mission progression: collect three cheese pieces, bait the mousetrap, lure Tom into it, and receive a level-complete message with a short generated victory fanfare.
+- Generated sound cues for collecting cheese, arming the trap and completing the level.
 - On-screen LOW / MED / HIGH graphics presets with frame-rate and shadow-distance adjustments; the selected preset is saved between launches.
 - GFX panel master-volume slider; the audio level is saved between launches and applies to generated game sound cues.
 - Runtime NavMesh built from the house colliders.
