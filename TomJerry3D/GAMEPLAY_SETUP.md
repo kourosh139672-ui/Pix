@@ -15,7 +15,10 @@ This is a Unity C# prototype. The included Editor command creates a saved scene;
 - Android HUD created at runtime: left joystick, right swipe-to-look area, objective instructions, cheese counter, USE button, start screen and pause menu.
 - The objective HUD updates when Jerry collects cheese or carries food toward the mousetrap.
 - Start screen pauses the game until PLAY is tapped. PAUSE opens a pause overlay with RESUME and RESTART; Escape toggles pause in the Unity Editor.
-- Procedural cartoon Tom placeholder with patrol/chase/search AI.
+- Procedural cartoon Tom with procedural walk bounce, body sway, head and tail animation, plus patrol/chase/search AI.
+- Mission progression: collect three cheese pieces, bait the mousetrap, and receive a completion message.
+- Generated cartoon sound cues for collecting cheese and arming the trap.
+- On-screen LOW / MED / HIGH graphics presets with frame-rate and shadow-distance adjustments.
 - Runtime NavMesh built from the house colliders so Tom can navigate without a separate bake step.
 - Kitchen fridge that opens and dispenses carryable cheese.
 - Collectible cheese, a baitable mousetrap and four harmless breakable props.
@@ -27,6 +30,6 @@ This is a Unity C# prototype. The included Editor command creates a saved scene;
 
 ## Important setup notes
 - Use a Unity project with the built-in UI (uGUI) and legacy Input Manager enabled. The runtime HUD uses `StandaloneInputModule`.
-- The demo uses procedural primitive placeholder art. It is a gameplay blockout, not final high-detail character models, rigged animation, voice acting, music or finished effects.
+- The demo still uses procedural primitive character and environment art, not final high-detail imported models. Tom now has lightweight procedural motion; generated UI sound cues are included, but recorded voice acting, a music soundtrack and finished effects are not.
 - The project scripts are C#, because Unity gameplay scripts run in C#. Kotlin can be used for separate native Android integrations, not as the Unity scene scripting language.
 - Android APK export still requires Android Build Support in Unity and a build from Unity Editor. This repository does not contain a prebuilt APK.
