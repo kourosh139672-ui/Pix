@@ -35,6 +35,8 @@ class TomJerryGame : ApplicationAdapter() {
     private val models = mutableListOf<Model>()
     private val world = mutableListOf<ModelInstance>()
     private val cheese = mutableListOf<Vector3>()
+    private val cheeseInstances = mutableListOf<ModelInstance>()
+    private val trapParts = mutableListOf<ModelInstance>()
     private lateinit var tom: ModelInstance
     private val player = Vector3(0f, 1.65f, 6f)
     private val tomPosition = Vector3(0f, 0.65f, -5f)
@@ -72,7 +74,7 @@ class TomJerryGame : ApplicationAdapter() {
         buildWorld()
         Gdx.input.inputProcessor = object : InputAdapter() {
             override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-                if (gameOver) { resetGame(); return true }
+                if (gameOver || won) { resetGame(); return true }
                 val w = Gdx.graphics.width.toFloat()
                 if (screenX > w * 0.78f && screenY > Gdx.graphics.height * 0.62f) {
                     placeTrap()
@@ -139,7 +141,8 @@ class TomJerryGame : ApplicationAdapter() {
         makeSphere(tomPosition.x + 0.43f, 1.12f, tomPosition.z, 0.42f, Color.valueOf("777b83"))
         val spots = listOf(Vector3(-2f, 0.35f, 2f), Vector3(5f, 0.35f, -1f), Vector3(-6f, 0.35f, 5f))
         cheese.addAll(spots)
-        spots.forEach { makeSphere(it.x, it.y, it.z, 0.48f, Color.valueOf("ffd447")) }
+        cheeseInstances.clear()
+        spots.forEach { cheeseInstances.add(makeSphere(it.x, it.y, it.z, 0.48f, Color.valueOf("ffd447"))) }
         // windows
         makeBox(0f, 2.5f, -9.82f, 3.2f, 1.4f, 0.04f, Color.valueOf("8dc9e8"))
     }
@@ -160,13 +163,14 @@ class TomJerryGame : ApplicationAdapter() {
             trapPlaced = true
             cheeseCount--
             val p = Vector3(player.x + forward.x * 1.6f, 0.12f, player.z + forward.z * 1.6f)
-            makeBox(p.x, p.y, p.z, 0.9f, 0.18f, 0.65f, Color.LIGHT_GRAY)
-            makeBox(p.x, p.y + 0.18f, p.z, 0.62f, 0.08f, 0.08f, Color.DARK_GRAY)
+            trapParts.clear()
+            trapParts.add(makeBox(p.x, p.y, p.z, 0.9f, 0.18f, 0.65f, Color.LIGHT_GRAY))
+            trapParts.add(makeBox(p.x, p.y + 0.18f, p.z, 0.62f, 0.08f, 0.08f, Color.DARK_GRAY))
         }
     }
 
     private fun updateGame(delta: Float) {
-        if (gameOver) return
+        if (gameOver || won) return
         val dt = delta.coerceAtMost(0.05f)
         val yawRad = yaw * MathUtils.degreesToRadians
         forward.set(-MathUtils.sin(yawRad), 0f, -MathUtils.cos(yawRad)).nor()
@@ -188,10 +192,12 @@ class TomJerryGame : ApplicationAdapter() {
         if (trapPlaced && tomPosition.dst(player) < 2.0f) trapped = 4f
         if (tomPosition.dst(player) < 0.85f) gameOver = true
 
-        val iterator = cheese.iterator()
-        while (iterator.hasNext()) {
-            val c = iterator.next()
-            if (player.dst(c) < 1.0f) { iterator.remove(); cheeseCount++ }
+        for (i in cheese.indices.reversed()) {
+            if (player.dst(cheese[i]) < 1.0f) {
+                cheese.removeAt(i)
+                world.remove(cheeseInstances[i])
+                cheeseCount++
+            }
         }
         if (cheeseCount >= 3) won = true
         updateCamera()
@@ -211,7 +217,7 @@ class TomJerryGame : ApplicationAdapter() {
     }
 
     private fun drawHud() {
-        shape.projectionMatrix = camera.combined
+        shape.projectionMatrix.setToOrtho2D(0f, 0f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
         shape.begin(ShapeRenderer.ShapeType.Filled)
         shape.color = Color(0f, 0f, 0f, 0.28f)
         shape.circle(92f, 92f, 54f)
@@ -232,12 +238,29 @@ class TomJerryGame : ApplicationAdapter() {
     }
 
     private fun resetGame() {
-        gameOver = false; won = false; cheeseCount = 0; trapped = 0f; trapPlaced = false
-        player.set(0f, 1.65f, 6f); tomPosition.set(0f, 0.65f, -5f)
+        gameOver = false
+        won = false
+        cheeseCount = 0
+        trapped = 0f
+        trapPlaced = false
+        player.set(0f, 1.65f, 6f)
+        tomPosition.set(0f, 0.65f, -5f)
+        tom.transform.setToTranslation(tomPosition)
         cheese.clear()
         cheese.addAll(listOf(Vector3(-2f, 0.35f, 2f), Vector3(5f, 0.35f, -1f), Vector3(-6f, 0.35f, 5f)))
-        // Full scene reset is handled by recreating the application for this prototype.
-        Gdx.app.exit()
+        cheeseInstances.forEachIndexed { index, instance ->
+            if (!world.contains(instance)) world.add(instance)
+            instance.transform.setToTranslation(cheese[index])
+        }
+        trapParts.forEach { world.remove(it) }
+        trapParts.clear()
+        leftPointer = -1
+        rightPointer = -1
+        moveX = 0f
+        moveY = 0f
+        yaw = 180f
+        pitch = 0f
+        updateCamera()
     }
 
     override fun resize(width: Int, height: Int) {
