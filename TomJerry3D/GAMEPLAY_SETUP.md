@@ -19,7 +19,8 @@ This is a Unity C# prototype. The Editor command creates a saved scene; the scen
 - Procedural cartoon Tom and Jerry models, lightweight procedural motion, plus Tom's patrol/chase/search AI.
 - Mission progression: collect three cheese pieces, bait the mousetrap, and receive a completion message.
 - Generated sound cues for collecting cheese and arming the trap.
-- On-screen LOW / MED / HIGH graphics presets with frame-rate and shadow-distance adjustments.
+- On-screen LOW / MED / HIGH graphics presets with frame-rate and shadow-distance adjustments; the selected preset is saved between launches.
+- GFX panel master-volume slider; the audio level is saved between launches and applies to generated game sound cues.
 - Runtime NavMesh built from the house colliders.
 - Kitchen fridge that opens and dispenses carryable cheese.
 - Collectible cheese, a baitable mousetrap and harmless breakable props.
