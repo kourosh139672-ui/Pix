@@ -43,36 +43,41 @@ jobs:
           test -n "$SDKMANAGER"
           chmod +x "$SDKMANAGER"
           yes | "$SDKMANAGER" --sdk_root="$SDK" --licenses >/dev/null 2>&1 || true
-
-          # Godot 4.4.1's Android exporter reliably selects Build Tools 33.0.2.
-          # Match the export preset's target SDK to this installed toolchain.
-          "$SDKMANAGER" --sdk_root="$SDK" "cmdline-tools;latest" "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+          "$SDKMANAGER" --sdk_root="$SDK" "cmdline-tools;latest" "platform-tools" "platforms;android-33" "build-tools;33.0.2" "cmake;3.10.2.4988404" "ndk;23.2.8568313"
 
           test -d "$SDK/platforms/android-33"
           test -x "$SDK/build-tools/33.0.2/aapt"
-          test -x "$SDK/build-tools/33.0.2/aapt2"
+          test -x "$SDK/build-tools/33.0.2/apksigner"
+          test -d "$SDK/ndk/23.2.8568313"
+          test -d "$SDK/cmake/3.10.2.4988404"
           ls -la "$SDK/build-tools/33.0.2"
-          ls -la "$SDK/platforms/android-33"
 
-          mkdir -p /root/.android /root/.config/godot
-          if [ ! -f /root/.android/debug.keystore ]; then
-            keytool -genkeypair -v -keystore /root/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
+          # GitHub container jobs use HOME=/github/home, not /root.
+          # Godot reads editor settings from HOME, so write them there.
+          mkdir -p "$HOME/.android" "$HOME/.config/godot"
+          if [ ! -f "$HOME/.android/debug.keystore" ]; then
+            keytool -genkeypair -v -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey -keypass android -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
           fi
-          cat > /root/.config/godot/editor_settings-4.tres <<EOF
+          cat > "$HOME/.config/godot/editor_settings-4.tres" <<EOF
           [gd_resource type="EditorSettings" format=3]
 
           [resource]
           export/android/java_sdk_path = "$JAVA_DIR"
           export/android/android_sdk_path = "$SDK"
+          export/android/debug_keystore = "$HOME/.android/debug.keystore"
+          export/android/debug_keystore_user = "androiddebugkey"
+          export/android/debug_keystore_pass = "android"
           EOF
-          cat /root/.config/godot/editor_settings-4.tres
+          echo "HOME=$HOME"
+          cat "$HOME/.config/godot/editor_settings-4.tres"
+          test -s "$HOME/.config/godot/editor_settings-4.tres"
 
       - name: Prepare and verify Godot Android export templates
         run: |
           set -eux
-          mkdir -p ~/.local/share/godot/export_templates
+          mkdir -p "$HOME/.local/share/godot/export_templates"
           if [ -d /root/.local/share/godot/export_templates/4.4.1.stable ]; then
-            cp -a /root/.local/share/godot/export_templates/4.4.1.stable ~/.local/share/godot/export_templates/
+            cp -a /root/.local/share/godot/export_templates/4.4.1.stable "$HOME/.local/share/godot/export_templates/"
           fi
           TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/4.4.1.stable"
           test -s "$TEMPLATE_DIR/android_debug.apk"
@@ -81,6 +86,7 @@ jobs:
 
       - name: Import Godot project
         run: |
+          set -eux
           godot --headless --verbose --editor --path TomJerryGodot --quit
 
       - name: Export Android APK
