@@ -12,8 +12,9 @@ This is a Unity C# prototype. The included Editor command creates a saved scene;
 ## What the demo builds
 - Connected house layout with living room, kitchen, hallway, bedroom, storage and a front porch.
 - First-person mouse camera and CharacterController.
-- Android HUD created at runtime: left joystick, right swipe-to-look area, objective instructions, cheese counter and USE button.
+- Android HUD created at runtime: left joystick, right swipe-to-look area, objective instructions, cheese counter, USE button, start screen and pause menu.
 - The objective HUD updates when Jerry collects cheese or carries food toward the mousetrap.
+- Start screen pauses the game until PLAY is tapped. PAUSE opens a pause overlay with RESUME and RESTART; Escape toggles pause in the Unity Editor.
 - Procedural cartoon Tom placeholder with patrol/chase/search AI.
 - Runtime NavMesh built from the house colliders so Tom can navigate without a separate bake step.
 - Kitchen fridge that opens and dispenses carryable cheese.
@@ -21,7 +22,7 @@ This is a Unity C# prototype. The included Editor command creates a saved scene;
 - Tom's cartoon chaos routine: after enough props are knocked over, an owner-scolding event fires and Tom takes a short trip onto the porch before returning.
 
 ## Controls
-- Android/touch: left joystick to move; drag on the right half to look; **USE** to pick up/drop food, open the fridge, or place carried food into the mousetrap.
+- Android/touch: tap **PLAY** on the start screen; left joystick to move; drag on the right half to look; **USE** to pick up/drop food, open the fridge, or place carried food into the mousetrap; **PAUSE** opens the pause menu.
 - Unity Editor: WASD/arrow keys and mouse movement to move/look; **E** to interact.
 
 ## Important setup notes
