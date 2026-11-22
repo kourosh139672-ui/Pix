@@ -63,6 +63,11 @@ jobs:
           mkdir -p /root/.android
           ln -sf "$HOME/.android/debug.keystore" /root/.android/debug.keystore
           test -s /root/.android/debug.keystore
+          # Rewrite the preset's signing path to the actual HOME location used by this runner.
+          sed -i "s#keystore/debug=\"/root/.android/debug.keystore\"#keystore/debug=\"$HOME/.android/debug.keystore\"#" TomJerryGodot/export_presets.cfg
+          grep -F "keystore/debug=\"$HOME/.android/debug.keystore\"" TomJerryGodot/export_presets.cfg
+          keytool -list -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey
+          cat "$SDK/build-tools/33.0.2/source.properties"
           cat > "$HOME/.config/godot/editor_settings-4.tres" <<EOF
           [gd_resource type="EditorSettings" format=3]
 
