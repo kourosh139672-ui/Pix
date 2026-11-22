@@ -1,34 +1,33 @@
-# Gameplay additions: carrying, fridge, bait and Tom's cartoon chaos
+# Tom & Jerry 3D — gameplay setup
 
-These scripts are prototype gameplay systems. They are committed to the repository, but still need to be attached and configured in a Unity scene.
+This repository is a Unity C# prototype for an original cartoon mouse-and-cat chase game. The player controls the mouse in first person; the cat patrols, notices the player, chases, and searches the last known position.
 
-## 1. Let Jerry and Tom carry things
-- Add a child empty GameObject named `HandSocket` to each character, positioned in front of the hand.
-- Add `CharacterHandPickup` to Jerry and Tom.
-- Assign each character's camera/eye transform to `View` and its `HandSocket` to `Hand Socket`.
-- Food and objects that can be carried need a collider and `CarryableItem`.
-- Aim at an item and press E. On mobile, connect a UI button to `CharacterHandPickup.Interact()`. Press E again to drop it.
+## First-person player
+1. Create a Player object and add a CharacterController and MousePlayerController.
+2. Add a child object named CameraPivot at the mouse's eye height; put the Main Camera under it.
+3. Assign CameraPivot to the controller's Camera Pivot field. The player object rotates left/right; the camera pivot rotates up/down.
+4. Add CharacterHandPickup to the player. Assign the Main Camera to View and a child hand socket to Hand Socket.
 
-## 2. Add the kitchen fridge
-- Add `KitchenFridgeBuilder` to an empty object in the kitchen.
-- Adjust its `Position` in the Inspector if needed.
-- It builds a fridge with a door and a cheese item dispenser. Aim at the fridge and press E to open/close it and spawn food.
+## Android touch controls
+1. Add MobileFirstPersonHUD to an active object in the scene.
+2. Assign the player and its CharacterHandPickup, or leave them empty to auto-find the components.
+3. Press Play: the HUD creates a left movement joystick, a right swipe-look area and a USE button.
+4. The USE button picks up/drops carryable objects and interacts with the fridge or trap. The same player controller also supports keyboard/mouse testing in the Editor.
 
-## 3. Put food in the mousetrap
-- Add a trigger collider to the trap object.
-- Add `MouseTrapBaitSocket` to the trap and assign Tom's `CatAI`.
-- Add a child empty transform named `BaitSocket` and assign it to the trap's Bait Socket field.
-- With food held, aim at the trap and call `MouseTrapBaitSocket.PlaceHeldBait(CharacterHandPickup)` from a mobile UI button. This places the held food in the trap.
-- Tom only gets caught while bait is installed.
+The touch look input is consumed once per frame, so the camera does not keep rotating after a swipe ends.
 
-## 4. Tom makes a cartoon mess
-- Add `TomHouseChaos` to Tom (which needs a `NavMeshAgent`).
-- Create an empty transform outside the house and assign it to `Outside Point`.
-- Put `BreakableProp` on harmless, lightweight furniture/decor props that Tom can bump into.
-- When Tom runs into enough props, the owner scolds him through the `On Owner Scolds` UnityEvent and sends him outside for a short timeout. He then returns. This is slapstick game logic, not realistic destruction.
+## Tom AI and house
+- Add a NavMeshAgent and CatAI to Tom. Assign the player transform and patrol points.
+- Bake a NavMesh for the walkable house floor.
+- Add HouseBlockoutBuilder to an empty scene object to create a simple connected living room, kitchen, hallway, bedroom and storage-room blockout.
+- Add CartoonJerryFactory and CartoonTomFactory to empty objects to generate lightweight placeholder character models.
 
-## Current limitations
-- The scripts do not create a finished Unity scene, animation rig, mobile HUD, or Android APK.
-- NavMesh must be baked in Unity for Tom's navigation.
-- Connect the public methods to on-screen buttons for touch controls.
-- Use original or properly licensed 3D assets for final character and furniture models.
+## Existing gameplay systems
+- CharacterHandPickup lets either character carry and drop CarryableItem objects.
+- KitchenFridgeBuilder creates an interactive fridge and food dispenser.
+- MouseTrapBaitSocket only catches Tom when food is placed in the trap.
+- TomHouseChaos lets Tom knock over lightweight cartoon props; after enough mess, the owner scolds him and sends him outside temporarily.
+- BreakableProp can restore harmless props after a short delay.
+
+## Current limits
+The repository contains scripts and setup documentation, not a finished Unity scene, rigged animation, final art, audio, baked NavMesh or Android APK. Those need to be assembled and tested in Unity Editor on a supported computer or cloud build machine. Use original or properly licensed assets; the placeholder characters are procedural primitives.
