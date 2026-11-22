@@ -60,6 +60,17 @@ public class CartoonTomFactory : MonoBehaviour
         // Big expressive eyes with colored irises and dark pupils.
         Eye(-0.25f, "Left");
         Eye(0.25f, "Right");
+        // Expressive brows and forehead markings add a more readable cartoon face.
+        Brow(-0.25f, "Left");
+        Brow(0.25f, "Right");
+        for (int stripe = -1; stripe <= 1; stripe++)
+        {
+            float sx = stripe * 0.22f;
+            LinkBetween("Forehead Stripe " + stripe,
+                new Vector3(sx - 0.07f, 2.28f, 0.48f),
+                new Vector3(sx + 0.07f, 2.42f, 0.43f),
+                0.035f, dark);
+        }
 
         // Whisker lines on both sides of the muzzle.
         Whisker(new Vector3(-0.34f, 1.55f, 0.68f), new Vector3(-0.88f, 1.62f, 0.70f), "Left Whisker Upper");
@@ -78,6 +89,8 @@ public class CartoonTomFactory : MonoBehaviour
         Link("Right Leg", new Vector3(0.28f, 0.60f, 0.00f), new Vector3(0.34f, 0.20f, 0.10f), 0.20f, fur);
         Part("Left Foot", PrimitiveType.Sphere, new Vector3(-0.38f, 0.12f, 0.30f), new Vector3(0.40f, 0.18f, 0.52f), lightFur);
         Part("Right Foot", PrimitiveType.Sphere, new Vector3(0.38f, 0.12f, 0.30f), new Vector3(0.40f, 0.18f, 0.52f), lightFur);
+        ToeDetails(-0.38f, "Left");
+        ToeDetails(0.38f, "Right");
 
         // Long curved tail, built from overlapping tapered segments.
         Vector3[] tail =
@@ -105,6 +118,24 @@ public class CartoonTomFactory : MonoBehaviour
         GameObject pink = Part(side + " Inner Ear", PrimitiveType.Sphere,
             new Vector3(x, 2.56f, 0.17f), new Vector3(0.23f, 0.32f, 0.055f), innerEar);
         pink.transform.localRotation = outer.transform.localRotation;
+    }
+
+    private void Brow(float x, string side)
+    {
+        LinkBetween(side + " Eyebrow",
+            new Vector3(x - 0.16f, 2.20f, 0.61f),
+            new Vector3(x + 0.16f, 2.24f, 0.61f),
+            0.045f, fur);
+    }
+
+    private void ToeDetails(float x, string side)
+    {
+        for (int i = -1; i <= 1; i++)
+        {
+            Part(side + " Toe " + i, PrimitiveType.Sphere,
+                new Vector3(x + i * 0.105f, 0.105f, 0.51f),
+                new Vector3(0.095f, 0.075f, 0.12f), lightFur);
+        }
     }
 
     private void Eye(float x, string side)
