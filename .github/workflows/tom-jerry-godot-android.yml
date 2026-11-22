@@ -1,0 +1,58 @@
+name: Tom & Jerry Godot Android APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "TomJerryGodot/**"
+      - ".github/workflows/tom-jerry-godot-android.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tom-jerry-android
+  cancel-in-progress: true
+
+jobs:
+  export-android:
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.4.1
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare Godot export templates
+        run: |
+          mkdir -p ~/.local/share/godot/export_templates
+          if [ -d /root/.local/share/godot/export_templates/4.4.1.stable ]; then
+            cp -a /root/.local/share/godot/export_templates/4.4.1.stable ~/.local/share/godot/export_templates/
+          fi
+
+      - name: Check Android build tools
+        run: |
+          java -version
+          test -n "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          ls "${ANDROID_HOME:-$ANDROID_SDK_ROOT}/platform-tools"
+
+      - name: Import Godot project
+        run: |
+          cd TomJerryGodot
+          godot --headless --editor --path . --quit
+
+      - name: Export Android APK
+        run: |
+          mkdir -p build/android
+          godot --headless --path TomJerryGodot --export-debug "Android" "$GITHUB_WORKSPACE/build/android/TomJerry3D.apk"
+          test -s build/android/TomJerry3D.apk
+          file build/android/TomJerry3D.apk
+
+      - name: Upload installable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: TomJerry3D-Android-APK
+          path: build/android/TomJerry3D.apk
+          if-no-files-found: error
+          retention-days: 30

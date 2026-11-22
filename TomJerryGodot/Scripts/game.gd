@@ -14,6 +14,10 @@ var fridge_open := false
 var fridge_food_spawned := false
 var tom_visual: Node3D
 var animation_clock := 0.0
+var sfx_player: AudioStreamPlayer
+var music_player: AudioStreamPlayer
+var footstep_clock := 0.0
+var tom_alert_clock := 0.0
 var trap_baited := false
 var level_complete := false
 var game_over := false
@@ -28,6 +32,7 @@ var hint_label: Label
 var use_button: Button
 
 func _ready() -> void:
+	_build_audio()
 	_build_world()
 	_build_house_details()
 	_build_player()
@@ -36,6 +41,49 @@ func _ready() -> void:
 	_build_trap()
 	_build_hud()
 	_update_hud()
+
+func _build_audio() -> void:
+	music_player = AudioStreamPlayer.new()
+	music_player.name = "OriginalCartoonMusic"
+	music_player.volume_db = -3.0
+	music_player.stream = _make_audio_stream([523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880.0, 698.46, 523.25, 659.25, 783.99, 1046.5], 0.24, 0.055, true)
+	add_child(music_player)
+	music_player.play()
+	sfx_player = AudioStreamPlayer.new()
+	sfx_player.name = "GameSoundEffects"
+	sfx_player.volume_db = 0.0
+	add_child(sfx_player)
+
+func _make_audio_stream(notes: Array, note_duration: float, volume: float, looped: bool) -> AudioStreamWAV:
+	var rate := 22050
+	var frames_per_note := int(rate * note_duration)
+	var total_frames := frames_per_note * notes.size()
+	var pcm := PackedByteArray()
+	pcm.resize(total_frames * 2)
+	for frame in range(total_frames):
+		var note_index := int(frame / frames_per_note)
+		var local_frame := frame % frames_per_note
+		var frequency := float(notes[note_index])
+		var phase := TAU * frequency * float(local_frame) / float(rate)
+		var envelope := minf(1.0, float(local_frame) / 220.0) * minf(1.0, float(frames_per_note - local_frame) / 500.0)
+		var wave := (sin(phase) + 0.18 * sin(phase * 2.0)) * volume * envelope
+		pcm.encode_s16(frame * 2, int(clampf(wave, -1.0, 1.0) * 32767.0))
+	var stream := AudioStreamWAV.new()
+	stream.data = pcm
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.mix_rate = rate
+	stream.stereo = false
+	if looped:
+		stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		stream.loop_begin = 0
+		stream.loop_end = total_frames
+	return stream
+
+func _play_sfx(notes: Array, note_duration := 0.11, volume := 0.22) -> void:
+	if not is_instance_valid(sfx_player):
+		return
+	sfx_player.stream = _make_audio_stream(notes, note_duration, volume, false)
+	sfx_player.play()
 
 func _build_world() -> void:
 	var env := WorldEnvironment.new()
@@ -161,6 +209,7 @@ func _add_snack(pos: Vector3, snack_name: String, tint: Color) -> void:
 func _on_snack_body_entered(body: Node3D, pickup: Area3D) -> void:
 	if body == player and is_instance_valid(pickup):
 		snack_count += 1
+		_play_sfx([523.25, 783.99], 0.13, 0.24)
 		pickup.queue_free()
 		_update_hud()
 
@@ -292,6 +341,7 @@ func _add_cheese(pos: Vector3) -> void:
 func _on_cheese_body_entered(body: Node3D, cheese: Area3D) -> void:
 	if body == player and is_instance_valid(cheese):
 		cheese_count += 1
+		_play_sfx([659.25, 880.0, 987.77], 0.10, 0.24)
 		cheese.queue_free()
 		_update_hud()
 
@@ -378,6 +428,7 @@ func _on_use_pressed() -> void:
 		return
 	if player.global_position.distance_to(Vector3(-7.3, 0.6, -2.2)) < 3.0:
 		fridge_open = not fridge_open
+		_play_sfx([196.0, 246.94] if fridge_open else [246.94, 196.0], 0.16, 0.17)
 		if fridge_open and not fridge_food_spawned:
 			fridge_food_spawned = true
 			_add_snack(Vector3(-6.2, 0.35, -0.7), "Fridge apple", Color(0.82, 0.16, 0.12))
@@ -386,6 +437,7 @@ func _on_use_pressed() -> void:
 		return
 	if cheese_count >= 3 and not trap_baited and player.global_position.distance_to(Vector3(-1.5, 0, -5.2)) < 3.0:
 		trap_baited = true
+		_play_sfx([392.0, 523.25, 659.25], 0.15, 0.25)
 		_update_hud()
 	elif cheese_count < 3:
 		mission_label.text = "You need 3 cheese pieces first!"
@@ -440,9 +492,17 @@ func _physics_process(delta: float) -> void:
 	else:
 		player.velocity.y = -0.2
 	player.move_and_slide()
+	if direction.length() > 0.1:
+		footstep_clock += delta
+		if footstep_clock >= 0.38:
+			footstep_clock = 0.0
+			_play_sfx([165.0, 190.0], 0.055, 0.075)
+	else:
+		footstep_clock = 0.0
 	_update_tom(delta)
 	if not trap_baited and tom.global_position.distance_to(player.global_position) < 1.05:
 		game_over = true
+		_play_sfx([392.0, 311.13, 233.08, 174.61], 0.20, 0.25)
 		_update_hud()
 
 func _update_tom(delta: float) -> void:
@@ -455,11 +515,17 @@ func _update_tom(delta: float) -> void:
 			target = trap_position
 		else:
 			level_complete = true
+			_play_sfx([523.25, 659.25, 783.99, 1046.5], 0.22, 0.27)
 			tom.velocity = Vector3.ZERO
 			_update_hud()
 			return
 	elif tom.global_position.distance_to(player.global_position) > 8.0:
 		target = Vector3(4.5, 0.65, -3.5)
+	var chase_distance := tom.global_position.distance_to(player.global_position)
+	tom_alert_clock += delta
+	if chase_distance < 3.8 and tom_alert_clock >= 2.7:
+		tom_alert_clock = 0.0
+		_play_sfx([110.0, 130.81, 98.0], 0.16, 0.10)
 	var flat := target - tom.global_position
 	flat.y = 0
 	if flat.length() > 0.2:

@@ -1,6 +1,6 @@
 # Tom & Jerry 3D — Godot 4
 
-A browser-first 3D prototype maintained through GitHub. No editor needs to be installed on the phone.
+A mobile-first 3D prototype maintained through GitHub. No editor needs to be installed on the phone.
 
 ## Current prototype
 - Procedural starter house with kitchen, dining area, sofa, cupboard, window and furniture.
@@ -8,15 +8,17 @@ A browser-first 3D prototype maintained through GitHub. No editor needs to be in
 - Cartoon placeholder Tom with pursuit AI that speeds up as cheese is collected.
 - Three cheese collectibles, two snack pickups, baitable mousetrap, win/lose states and restart.
 - Mobile HUD and keyboard/mouse fallback.
+- Original synthesized sound effects (cheese, snacks, footsteps, fridge, trap, Tom alert, win/lose) and a looping original melody, generated locally by the game so no online audio files are needed.
 
-## Build without installing on the phone
-The workflow at `.github/workflows/tom-jerry-godot-web.yml` attempts a Web export after project changes. The Godot Web preset is stored in `export_presets.cfg`.
+## Android APK build
+The workflow `.github/workflows/tom-jerry-godot-android.yml` exports a debug APK on GitHub Actions. Open **Actions → Tom & Jerry Godot Android APK**, then download the `TomJerry3D-Android-APK` artifact after a successful run. The APK is intended for offline play and does not request Internet permission.
 
-For public publishing, enable **Settings → Pages → Build and deployment → Source: GitHub Actions**. A successful Actions run is required before a playable Pages URL exists.
+## Web build
+The separate workflow `.github/workflows/tom-jerry-godot-web.yml` exports a browser build. The target release for this project is the Android APK, not the browser.
 
 ## Honest status
-- Project source, Web export preset and cloud workflow are committed.
-- This remains a procedural prototype; characters and props are not final authored models or professional animations.
-- The workflow and game have not yet been confirmed by a successful run in this session.
-- The target is a browser build, not an Android APK.
-- See `GITHUB_ONLY_WORKFLOW_FA.md` for the Persian no-install instructions.
+- Project source, Web and Android export presets, and cloud workflows are committed.
+- Android APK must still pass a successful GitHub Actions export before it can be called ready.
+- The game is a procedural prototype; characters and props are not final authored models or professional animations.
+- Audio is synthesized original game audio, not official Tom & Jerry recordings.
+- The APK has not yet been installed or tested on a physical phone.
