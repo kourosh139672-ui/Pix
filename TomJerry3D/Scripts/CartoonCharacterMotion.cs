@@ -25,6 +25,10 @@ public class CartoonCharacterMotion : MonoBehaviour
     private Vector3 modelStart;
     private Vector3 leftEyeScale;
     private Vector3 rightEyeScale;
+    private Quaternion leftArmBase;
+    private Quaternion rightArmBase;
+    private Quaternion leftLegBase;
+    private Quaternion rightLegBase;
     private float phase;
     private float blinkTimer;
     private float blinkAmount;
@@ -56,10 +60,10 @@ public class CartoonCharacterMotion : MonoBehaviour
         model.localRotation = Quaternion.Euler(0f, 0f,
             Mathf.Sin(phase * 0.5f) * walkSway * movement);
 
-        AnimateLimb(leftLeg, stride * 30f);
-        AnimateLimb(rightLeg, -stride * 30f);
-        AnimateLimb(leftArm, -stride * 24f);
-        AnimateLimb(rightArm, stride * 24f);
+        AnimateLimb(leftLeg, leftLegBase, stride * 30f);
+        AnimateLimb(rightLeg, rightLegBase, -stride * 30f);
+        AnimateLimb(leftArm, leftArmBase, -stride * 24f);
+        AnimateLimb(rightArm, rightArmBase, stride * 24f);
 
         if (head != null)
             head.localRotation = Quaternion.Euler(
@@ -105,6 +109,10 @@ public class CartoonCharacterMotion : MonoBehaviour
         rightEye = model.Find("Right Eye White");
         if (leftEye != null) leftEyeScale = leftEye.localScale;
         if (rightEye != null) rightEyeScale = rightEye.localScale;
+        if (leftArm != null) leftArmBase = leftArm.localRotation;
+        if (rightArm != null) rightArmBase = rightArm.localRotation;
+        if (leftLeg != null) leftLegBase = leftLeg.localRotation;
+        if (rightLeg != null) rightLegBase = rightLeg.localRotation;
 
         tailSegments = new Transform[6];
         for (int i = 0; i < tailSegments.Length; i++)
@@ -112,10 +120,10 @@ public class CartoonCharacterMotion : MonoBehaviour
         return true;
     }
 
-    private static void AnimateLimb(Transform limb, float angle)
+    private static void AnimateLimb(Transform limb, Quaternion baseRotation, float angle)
     {
         if (limb != null)
-            limb.localRotation = Quaternion.Euler(angle, 0f, 0f);
+            limb.localRotation = baseRotation * Quaternion.Euler(angle, 0f, 0f);
     }
 
     private void AnimateBlink()
