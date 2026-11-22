@@ -1,9 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// Starter first-person controller for the player mouse.
-/// Add a CharacterController to the same GameObject.
-/// UI joystick code can call MoveFromUI and LookFromUI.
+/// First-person controller for the mouse. Add a CharacterController to this object
+/// and assign a child camera pivot at the mouse's eye height.
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
 public class MousePlayerController : MonoBehaviour
@@ -19,7 +18,7 @@ public class MousePlayerController : MonoBehaviour
 
     private CharacterController controller;
     private Vector2 uiMove;
-    private Vector2 uiLook;
+    private Vector2 uiLookDelta;
     private float verticalVelocity;
     private float pitch;
 
@@ -33,7 +32,9 @@ public class MousePlayerController : MonoBehaviour
     private void Update()
     {
         Vector2 keyboardMove = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-        Vector2 moveInput = uiMove.sqrMagnitude > 0.001f ? uiMove : Vector2.ClampMagnitude(keyboardMove, 1f);
+        Vector2 moveInput = uiMove.sqrMagnitude > 0.001f
+            ? uiMove
+            : Vector2.ClampMagnitude(keyboardMove, 1f);
 
         Vector3 direction = transform.right * moveInput.x + transform.forward * moveInput.y;
         if (controller.isGrounded && verticalVelocity < 0f)
@@ -44,7 +45,9 @@ public class MousePlayerController : MonoBehaviour
         velocity.y = verticalVelocity;
         controller.Move(velocity * Time.deltaTime);
 
-        Vector2 lookInput = uiLook;
+        // Touch look input is accumulated from drag events and consumed once per frame.
+        Vector2 lookInput = uiLookDelta;
+        uiLookDelta = Vector2.zero;
         if (lookInput.sqrMagnitude < 0.001f)
             lookInput = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
 
@@ -57,7 +60,7 @@ public class MousePlayerController : MonoBehaviour
     }
 
     public void MoveFromUI(Vector2 value) => uiMove = Vector2.ClampMagnitude(value, 1f);
-    public void LookFromUI(Vector2 value) => uiLook = value;
+    public void LookFromUI(Vector2 delta) => uiLookDelta += delta;
     public void StopMoveFromUI() => uiMove = Vector2.zero;
-    public void StopLookFromUI() => uiLook = Vector2.zero;
+    public void StopLookFromUI() => uiLookDelta = Vector2.zero;
 }
