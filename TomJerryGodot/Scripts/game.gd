@@ -8,6 +8,7 @@ var player: CharacterBody3D
 var camera: Camera3D
 var tom: CharacterBody3D
 var cheese_count := 0
+var snack_count := 0
 var trap_baited := false
 var level_complete := false
 var game_over := false
@@ -23,6 +24,7 @@ var use_button: Button
 
 func _ready() -> void:
 	_build_world()
+	_build_house_details()
 	_build_player()
 	_build_tom()
 	_build_collectibles()
@@ -89,6 +91,47 @@ func _make_box(label: String, pos: Vector3, dimensions: Vector3, tint: Color, so
 		collision.shape = shape
 		root.add_child(collision)
 	add_child(root)
+
+
+func _build_house_details() -> void:
+	_make_box("Window frame", Vector3(0, 2.25, -6.78), Vector3(3.2, 1.7, 0.08), Color(0.28, 0.52, 0.68), false)
+	_make_box("Sofa seat", Vector3(5.8, 0.55, -4.4), Vector3(3.2, 0.55, 1.15), Color(0.22, 0.42, 0.62))
+	_make_box("Sofa back", Vector3(5.8, 1.25, -4.95), Vector3(3.2, 1.25, 0.28), Color(0.18, 0.34, 0.54))
+	_make_box("Cupboard", Vector3(-2.7, 1.05, -6.1), Vector3(2.0, 2.1, 0.65), Color(0.52, 0.30, 0.16))
+	_make_box("Wall clock", Vector3(6.8, 2.9, -6.72), Vector3(0.8, 0.8, 0.08), Color(0.95, 0.86, 0.62), false)
+	_make_box("Kitchen island", Vector3(-5.2, 0.55, 1.4), Vector3(2.4, 1.1, 1.5), Color(0.55, 0.34, 0.22))
+	_make_box("Chair seat", Vector3(2.6, 0.55, 3.1), Vector3(0.9, 0.16, 0.9), Color(0.48, 0.28, 0.14))
+	_make_box("Chair back", Vector3(2.6, 1.05, 3.5), Vector3(0.9, 1.0, 0.14), Color(0.48, 0.28, 0.14))
+	_add_snack(Vector3(-5.0, 1.45, 1.4), "Apple", Color(0.82, 0.16, 0.12))
+	_add_snack(Vector3(5.8, 0.95, -4.4), "Cookie", Color(0.72, 0.48, 0.24))
+
+func _add_snack(pos: Vector3, snack_name: String, tint: Color) -> void:
+	var pickup := Area3D.new()
+	pickup.name = snack_name
+	pickup.position = pos
+	pickup.add_to_group("snacks")
+	var visual := MeshInstance3D.new()
+	var mesh := SphereMesh.new()
+	mesh.radius = 0.22
+	mesh.height = 0.4
+	visual.mesh = mesh
+	var material := StandardMaterial3D.new()
+	material.albedo_color = tint
+	visual.material_override = material
+	pickup.add_child(visual)
+	var collision := CollisionShape3D.new()
+	var shape := SphereShape3D.new()
+	shape.radius = 0.45
+	collision.shape = shape
+	pickup.add_child(collision)
+	pickup.body_entered.connect(_on_snack_body_entered.bind(pickup))
+	add_child(pickup)
+
+func _on_snack_body_entered(body: Node3D, pickup: Area3D) -> void:
+	if body == player and is_instance_valid(pickup):
+		snack_count += 1
+		pickup.queue_free()
+		_update_hud()
 
 func _build_player() -> void:
 	player = CharacterBody3D.new()
@@ -276,7 +319,7 @@ func _make_hud_button(parent: Control, caption: String, offset: Vector2) -> Butt
 
 func _update_hud() -> void:
 	if cheese_label:
-		cheese_label.text = "CHEESE: %d / 3" % cheese_count
+		cheese_label.text = "CHEESE: %d / 3    SNACKS: %d / 2" % [cheese_count, snack_count]
 	if mission_label:
 		if level_complete:
 			mission_label.text = "LEVEL COMPLETE! Jerry outsmarted Tom!"
@@ -370,8 +413,9 @@ func _update_tom(delta: float) -> void:
 	flat.y = 0
 	if flat.length() > 0.2:
 		var dir := flat.normalized()
-		tom.velocity.x = dir.x * TOM_SPEED
-		tom.velocity.z = dir.z * TOM_SPEED
+		var chase_speed := TOM_SPEED + minf(float(cheese_count) * 0.18, 0.54)
+		tom.velocity.x = dir.x * chase_speed
+		tom.velocity.z = dir.z * chase_speed
 		tom.look_at(tom.global_position + dir, Vector3.UP)
 	else:
 		tom.velocity.x = move_toward(tom.velocity.x, 0.0, TOM_SPEED)
