@@ -11,12 +11,12 @@ This is a Unity C# prototype. The Editor command creates a saved scene; the scen
 
 ## What the demo builds
 - Connected house layout with living room, kitchen, hallway, bedroom, storage and a front porch.
-- Generated decorative details: framed windows, wall pictures, a dining table and chairs, indoor plants and ceiling beams.
+- Generated decorative details: framed windows, wall pictures, a dining table and chairs, indoor plants, ceiling beams, warm point-lit ceiling fixtures, a wall clock, pantry jars and a fruit bowl.
 - First-person mouse camera and CharacterController; Jerry’s procedural arm and paw now bob with movement and animate on pickup.
 - Android HUD created at runtime: left joystick, right swipe-to-look area, objective instructions, cheese counter, USE and THROW buttons, start screen and pause menu.
 - Objective HUD updates when Jerry collects cheese or carries food toward the mousetrap.
 - Start screen pauses the game until PLAY is tapped. PAUSE opens a pause overlay with RESUME and RESTART; Escape toggles pause in the Unity Editor.
-- Procedural cartoon Tom and Jerry models; Tom now has an alternating arm/leg walk cycle, body bounce, head and ear motion, a segmented tail wave and occasional blinking, alongside patrol/chase/search AI.
+- Procedural cartoon Tom model with expressive brows, forehead markings, toe details and a segmented tail; Tom also has an alternating arm/leg walk cycle, body bounce, head and ear motion and occasional blinking, alongside patrol/chase/search AI.
 - Mission progression: collect three cheese pieces, bait the mousetrap, lure Tom into it, and receive a level-complete message with a short generated victory fanfare.
 - Generated sound cues for collecting cheese, arming the trap and completing the level.
 - On-screen LOW / MED / HIGH graphics presets with frame-rate and shadow-distance adjustments; the selected preset is saved between launches.
@@ -40,7 +40,7 @@ This is a Unity C# prototype. The Editor command creates a saved scene; the scen
 The build helper sets landscape orientation, IL2CPP and ARM64. Android export still requires a valid Unity installation, license and Android toolchain. A failed build must be diagnosed from the Unity Console.
 
 ## Important limitations
-- The character and environment art are procedural primitive prototypes, not final high-detail imported meshes or skinned character rigs.
+- The character and environment art are still procedural primitive prototypes with added detail, not final high-detail imported meshes or skinned character rigs.
 - Motion is lightweight procedural animation; the first-person paw now responds to walking and pickup actions. The included audio cues are generated tones, not recorded voice acting, soundtrack or final sound effects.
 - This repository workflow cannot launch Unity Editor, compile the project or test on a physical phone. Treat the APK as unbuilt until the Android build completes successfully in Unity.
 - Unity gameplay scripts are C#. Kotlin can be used for separate native Android integrations, not as the Unity scene scripting language.
