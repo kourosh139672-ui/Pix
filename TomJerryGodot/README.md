@@ -6,7 +6,9 @@ A mobile-first 3D prototype maintained through GitHub. No editor needs to be ins
 - Procedural starter house with kitchen, dining area, sofa, cupboard, window and furniture.
 - First-person Jerry controller with touch movement and swipe camera.
 - Cartoon placeholder Tom with pursuit AI that speeds up as cheese is collected.
-- Three cheese collectibles, two snack pickups, baitable mousetrap, win/lose states and restart.
+- Three cheese collectibles, snack pickups that grant a temporary speed boost, and a baitable mousetrap.
+- Pick up a squeaky ball or soft pillow with USE, then throw it with THROW to briefly distract/stun Tom. These are harmless cartoon props.
+- Win/lose states, restart, and touch-friendly throw controls.
 - Mobile HUD and keyboard/mouse fallback.
 - Original synthesized sound effects (cheese, snacks, footsteps, fridge, trap, Tom alert, win/lose) and a looping original melody, generated locally by the game so no online audio files are needed.
 

@@ -18,6 +18,11 @@ var sfx_player: AudioStreamPlayer
 var music_player: AudioStreamPlayer
 var footstep_clock := 0.0
 var tom_alert_clock := 0.0
+var tom_stunned_timer := 0.0
+var boost_timer := 0.0
+var held_item_name := ""
+var held_item_visual: Node3D
+var throw_button: Button
 var trap_baited := false
 var level_complete := false
 var game_over := false
@@ -183,6 +188,34 @@ func _build_house_details() -> void:
 	_make_box("Chair back", Vector3(2.6, 1.05, 3.5), Vector3(0.9, 1.0, 0.14), Color(0.48, 0.28, 0.14))
 	_add_snack(Vector3(-5.0, 1.45, 1.4), "Apple", Color(0.82, 0.16, 0.12))
 	_add_snack(Vector3(5.8, 0.95, -4.4), "Cookie", Color(0.72, 0.48, 0.24))
+	_add_throwable_pickup(Vector3(4.2, 1.35, 1.5), "Squeaky Ball", Color(0.24, 0.78, 0.48), false)
+	_add_throwable_pickup(Vector3(-5.5, 1.85, -4.5), "Soft Pillow", Color(0.35, 0.58, 0.9), true)
+
+func _add_throwable_pickup(pos: Vector3, item_name: String, tint: Color, box_shape: bool) -> void:
+	var pickup := Area3D.new()
+	pickup.name = item_name
+	pickup.position = pos
+	pickup.add_to_group("throwable_pickups")
+	var visual := MeshInstance3D.new()
+	if box_shape:
+		var mesh := BoxMesh.new()
+		mesh.size = Vector3(0.55, 0.35, 0.5)
+		visual.mesh = mesh
+	else:
+		var mesh := SphereMesh.new()
+		mesh.radius = 0.24
+		mesh.height = 0.48
+		visual.mesh = mesh
+	var material := StandardMaterial3D.new()
+	material.albedo_color = tint
+	visual.material_override = material
+	pickup.add_child(visual)
+	var collision := CollisionShape3D.new()
+	var shape := SphereShape3D.new()
+	shape.radius = 0.75
+	collision.shape = shape
+	pickup.add_child(collision)
+	add_child(pickup)
 
 func _add_snack(pos: Vector3, snack_name: String, tint: Color) -> void:
 	var pickup := Area3D.new()
@@ -209,6 +242,7 @@ func _add_snack(pos: Vector3, snack_name: String, tint: Color) -> void:
 func _on_snack_body_entered(body: Node3D, pickup: Area3D) -> void:
 	if body == player and is_instance_valid(pickup):
 		snack_count += 1
+		boost_timer = 5.0
 		_play_sfx([523.25, 783.99], 0.13, 0.24)
 		pickup.queue_free()
 		_update_hud()
@@ -397,6 +431,9 @@ func _build_hud() -> void:
 	use_button.pressed.connect(_on_use_pressed)
 	var restart_button := _make_hud_button(root, "RESTART", Vector2(-154, -164))
 	restart_button.pressed.connect(_restart_level)
+	throw_button = _make_hud_button(root, "THROW", Vector2(-154, -236))
+	throw_button.disabled = true
+	throw_button.pressed.connect(_throw_held_item)
 
 func _make_hud_button(parent: Control, caption: String, offset: Vector2) -> Button:
 	var button := Button.new()
@@ -410,7 +447,8 @@ func _make_hud_button(parent: Control, caption: String, offset: Vector2) -> Butt
 
 func _update_hud() -> void:
 	if cheese_label:
-		cheese_label.text = "CHEESE: %d / 3    SNACKS: %d / 2" % [cheese_count, snack_count]
+		var held_text := "    HOLDING: " + held_item_name if held_item_name != "" else ""
+		cheese_label.text = "CHEESE: %d / 3    SNACKS: %d / 2%s" % [cheese_count, snack_count, held_text]
 	if mission_label:
 		if level_complete:
 			mission_label.text = "LEVEL COMPLETE! Jerry outsmarted Tom!"
@@ -423,8 +461,10 @@ func _update_hud() -> void:
 		else:
 			mission_label.text = "Trap baited! Lead Tom to the trap."
 
-func _on_use_pressed() -> void:
+	func _on_use_pressed() -> void:
 	if level_complete or game_over:
+		return
+	if _try_pickup_throwable():
 		return
 	if player.global_position.distance_to(Vector3(-7.3, 0.6, -2.2)) < 3.0:
 		fridge_open = not fridge_open
@@ -443,6 +483,83 @@ func _on_use_pressed() -> void:
 		mission_label.text = "You need 3 cheese pieces first!"
 	else:
 		mission_label.text = "Move closer to the mousetrap or fridge and tap USE."
+
+func _try_pickup_throwable() -> bool:
+	if held_item_name != "":
+		return false
+	for item in get_tree().get_nodes_in_group("throwable_pickups"):
+		if is_instance_valid(item) and player.global_position.distance_to(item.global_position) < 2.2:
+			held_item_name = item.name
+			var tint := Color(0.24, 0.78, 0.48) if held_item_name == "Squeaky Ball" else Color(0.35, 0.58, 0.9)
+			item.queue_free()
+			held_item_visual = Node3D.new()
+			held_item_visual.position = Vector3(0.42, -0.28, -0.68)
+			camera.add_child(held_item_visual)
+			var held_mesh := MeshInstance3D.new()
+			if held_item_name == "Squeaky Ball":
+				var sphere := SphereMesh.new()
+				sphere.radius = 0.18
+				sphere.height = 0.36
+				held_mesh.mesh = sphere
+			else:
+				var pillow := BoxMesh.new()
+				pillow.size = Vector3(0.38, 0.25, 0.32)
+				held_mesh.mesh = pillow
+			var material := StandardMaterial3D.new()
+			material.albedo_color = tint
+			held_mesh.material_override = material
+			held_item_visual.add_child(held_mesh)
+			throw_button.disabled = false
+			_play_sfx([440.0, 554.37], 0.12, 0.20)
+			_update_hud()
+			return true
+	return false
+
+func _throw_held_item() -> void:
+	if held_item_name == "" or level_complete or game_over:
+		return
+	var tint := Color(0.24, 0.78, 0.48) if held_item_name == "Squeaky Ball" else Color(0.35, 0.58, 0.9)
+	if is_instance_valid(held_item_visual):
+		held_item_visual.queue_free()
+	var projectile := RigidBody3D.new()
+	projectile.name = "Thrown" + held_item_name.replace(" ", "")
+	projectile.mass = 0.45
+	projectile.continuous_cd = true
+	var mesh_instance := MeshInstance3D.new()
+	if held_item_name == "Squeaky Ball":
+		var sphere := SphereMesh.new()
+		sphere.radius = 0.2
+		sphere.height = 0.4
+		mesh_instance.mesh = sphere
+	else:
+		var pillow := BoxMesh.new()
+		pillow.size = Vector3(0.42, 0.28, 0.36)
+		mesh_instance.mesh = pillow
+	var material := StandardMaterial3D.new()
+	material.albedo_color = tint
+	mesh_instance.material_override = material
+	projectile.add_child(mesh_instance)
+	var collision := CollisionShape3D.new()
+	var shape := SphereShape3D.new()
+	shape.radius = 0.22
+	collision.shape = shape
+	projectile.add_child(collision)
+	add_child(projectile)
+	projectile.global_position = camera.global_position + (-camera.global_basis.z * 0.9)
+	projectile.linear_velocity = (-camera.global_basis.z * 10.0) + Vector3.UP * 2.0
+	projectile.body_entered.connect(_on_thrown_item_body_entered.bind(projectile))
+	held_item_name = ""
+	held_item_visual = null
+	throw_button.disabled = true
+	_play_sfx([220.0, 330.0, 440.0], 0.09, 0.17)
+	_update_hud()
+
+func _on_thrown_item_body_entered(body: Node, projectile: RigidBody3D) -> void:
+	if body == tom and is_instance_valid(projectile):
+		tom_stunned_timer = 2.4
+		tom.velocity = Vector3.ZERO
+		_play_sfx([196.0, 146.83, 196.0], 0.16, 0.20)
+		projectile.queue_free()
 
 func _restart_level() -> void:
 	get_tree().reload_current_scene()
@@ -485,8 +602,11 @@ func _physics_process(delta: float) -> void:
 	camera.rotation.x = clampf(camera.rotation.x - look.y * LOOK_SENSITIVITY, -1.1, 1.1)
 
 	var direction := (player.global_transform.basis * Vector3(move_axis.x, 0, move_axis.y)).normalized()
-	player.velocity.x = direction.x * PLAYER_SPEED
-	player.velocity.z = direction.z * PLAYER_SPEED
+	if boost_timer > 0.0:
+		boost_timer = maxf(0.0, boost_timer - delta)
+	var current_speed := PLAYER_SPEED * (1.55 if boost_timer > 0.0 else 1.0)
+	player.velocity.x = direction.x * current_speed
+	player.velocity.z = direction.z * current_speed
 	if not player.is_on_floor():
 		player.velocity.y -= 18.0 * delta
 	else:
@@ -499,13 +619,18 @@ func _physics_process(delta: float) -> void:
 			_play_sfx([165.0, 190.0], 0.055, 0.075)
 	else:
 		footstep_clock = 0.0
-	_update_tom(delta)
-	if not trap_baited and tom.global_position.distance_to(player.global_position) < 1.05:
+	if tom_stunned_timer > 0.0:
+		tom_stunned_timer = maxf(0.0, tom_stunned_timer - delta)
+		tom.velocity = Vector3.ZERO
+		tom.move_and_slide()
+	else:
+		_update_tom(delta)
+	if not trap_baited and tom_stunned_timer <= 0.0 and tom.global_position.distance_to(player.global_position) < 1.05:
 		game_over = true
 		_play_sfx([392.0, 311.13, 233.08, 174.61], 0.20, 0.25)
 		_update_hud()
 
-func _update_tom(delta: float) -> void:
+	func _update_tom(delta: float) -> void:
 	if not is_instance_valid(tom):
 		return
 	var target := player.global_position

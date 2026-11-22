@@ -24,18 +24,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Prepare Android signing and SDK
+        run: |
+          set -eu
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+          test -n "$SDK"
+          JAVA_DIR="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
+          echo "JAVA_HOME=$JAVA_DIR" >> "$GITHUB_ENV"
+          command -v sdkmanager >/dev/null 2>&1 || export PATH="$SDK/cmdline-tools/latest/bin:$SDK/tools/bin:$PATH"
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+          mkdir -p /root/.android
+          if [ ! -f /root/.android/debug.keystore ]; then
+            keytool -genkeypair -v -keystore /root/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
+          fi
+          mkdir -p /root/.config/godot
+          cat > /root/.config/godot/editor_settings-4.tres <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/java_sdk_path = "$JAVA_DIR"
+          export/android/android_sdk_path = "$SDK"
+          EOF
+
       - name: Prepare Godot export templates
         run: |
           mkdir -p ~/.local/share/godot/export_templates
           if [ -d /root/.local/share/godot/export_templates/4.4.1.stable ]; then
             cp -a /root/.local/share/godot/export_templates/4.4.1.stable ~/.local/share/godot/export_templates/
           fi
-
-      - name: Check Android build tools
-        run: |
-          java -version
-          test -n "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
-          ls "${ANDROID_HOME:-$ANDROID_SDK_ROOT}/platform-tools"
 
       - name: Import Godot project
         run: |
