@@ -12,7 +12,8 @@ This is a Unity C# prototype. The included Editor command creates a saved scene;
 ## What the demo builds
 - Connected house layout with living room, kitchen, hallway, bedroom, storage and a front porch.
 - First-person mouse camera and CharacterController.
-- Android HUD created at runtime: left joystick, right swipe-to-look area and USE button.
+- Android HUD created at runtime: left joystick, right swipe-to-look area, objective instructions, cheese counter and USE button.
+- The objective HUD updates when Jerry collects cheese or carries food toward the mousetrap.
 - Procedural cartoon Tom placeholder with patrol/chase/search AI.
 - Runtime NavMesh built from the house colliders so Tom can navigate without a separate bake step.
 - Kitchen fridge that opens and dispenses carryable cheese.
