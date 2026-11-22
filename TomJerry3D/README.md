@@ -16,9 +16,10 @@ Full steps and controls: [GAMEPLAY_SETUP.md](GAMEPLAY_SETUP.md).
 - Runtime Android HUD with movement joystick, swipe-look, objective/cheese counter and USE button.
 - Start screen plus pause overlay with Resume and Restart controls.
 - Procedurally generated connected house and runtime NavMesh.
-- Procedural cartoon cat placeholder with patrol, sight detection, chase and search.
+- Procedurally animated cartoon cat with patrol, sight detection, chase and search.
+- Mission progression, generated sound cues and LOW / MED / HIGH graphics presets.
 - Carry/drop items, kitchen fridge food dispenser and baitable mousetrap.
 - Collectible cheese and cartoon prop chaos; Tom gets sent to the porch briefly after enough mess.
 
 ## Status
-This is a playable prototype scene generator, not a finished commercial game. Final 3D assets, animation, sound, polish, device testing and Android APK export remain to be done. The project uses C# for Unity gameplay scripts; Kotlin is only suitable for separate native Android modules.
+This is a playable prototype scene generator, not a finished commercial game. Final high-detail 3D assets, recorded audio/music, device testing and Android APK export remain to be done. Lightweight procedural animation and generated sound cues are included. The project uses C# for Unity gameplay scripts; Kotlin is only suitable for separate native Android modules.
