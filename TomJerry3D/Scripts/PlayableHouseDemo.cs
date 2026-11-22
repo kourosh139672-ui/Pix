@@ -45,6 +45,7 @@ public class PlayableHouseDemo : MonoBehaviour
 
         Transform player = BuildPlayer();
         CatAI cat = BuildTom(player);
+        houseRoot.gameObject.AddComponent<TomJerryPolishDirector>();
         BuildFridge();
         BuildCheese(new Vector3(-5f, 0.25f, -1.5f));
         BuildCheese(new Vector3(1.8f, 0.25f, -5.8f));
@@ -200,6 +201,7 @@ public class PlayableHouseDemo : MonoBehaviour
         CartoonTomFactory model = tom.AddComponent<CartoonTomFactory>();
         model.size = 0.68f;
         model.buildOnStart = true;
+        tom.AddComponent<CartoonCharacterMotion>();
 
         CatAI ai = tom.AddComponent<CatAI>();
         Transform[] patrol = new Transform[4];
