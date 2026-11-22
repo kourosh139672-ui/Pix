@@ -108,6 +108,18 @@ public class MobileFirstPersonHUD : MonoBehaviour
             label.text = "USE";
             label.color = new Color(0.12f, 0.10f, 0.08f);
             label.fontStyle = FontStyle.Bold;
+
+            Image throwImage = MakeImage("Throw Button", root.transform,
+                new Vector2(0.73f, 0.14f), new Vector2(112, 88),
+                new Color(0.34f, 0.70f, 0.88f, 0.9f));
+            Button throwButton = throwImage.gameObject.AddComponent<Button>();
+            throwButton.targetGraphic = throwImage;
+            throwButton.onClick.AddListener(pickup.ThrowHeld);
+            Text throwLabel = MakeText("Throw Label", throwImage.transform,
+                new Vector2(0.5f, 0.5f), new Vector2(112, 88), 22);
+            throwLabel.text = "THROW";
+            throwLabel.color = Color.white;
+            throwLabel.fontStyle = FontStyle.Bold;
         }
 
         Debug.Log("Tom & Jerry 3D mobile HUD created.");
