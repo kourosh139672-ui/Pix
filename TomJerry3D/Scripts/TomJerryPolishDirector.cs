@@ -15,6 +15,9 @@ public class TomJerryPolishDirector : MonoBehaviour
     private int previousCheese;
     private bool previousArmed;
     private GameObject graphicsPanel;
+    private Slider volumeSlider;
+    private const string GraphicsKey = "TJ3D_GraphicsPreset";
+    private const string VolumeKey = "TJ3D_MasterVolume";
 
     private void Start()
     {
@@ -24,7 +27,11 @@ public class TomJerryPolishDirector : MonoBehaviour
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 0f;
         BuildMissionAndGraphicsUI();
-        ApplyGraphicsPreset(1);
+        int savedPreset = PlayerPrefs.GetInt(GraphicsKey, 1);
+        ApplyGraphicsPreset(savedPreset, false);
+        float savedVolume = PlayerPrefs.GetFloat(VolumeKey, 0.8f);
+        AudioListener.volume = Mathf.Clamp01(savedVolume);
+        if (volumeSlider != null) volumeSlider.SetValueWithoutNotify(AudioListener.volume);
         UpdateMission();
     }
 
@@ -66,15 +73,36 @@ public class TomJerryPolishDirector : MonoBehaviour
         RectTransform panelRect = graphicsPanel.GetComponent<RectTransform>();
         panelRect.anchorMin = new Vector2(0.08f, 0.78f);
         panelRect.anchorMax = new Vector2(0.08f, 0.78f);
-        panelRect.sizeDelta = new Vector2(390, 190);
+        panelRect.sizeDelta = new Vector2(410, 270);
         graphicsPanel.GetComponent<Image>().color = new Color(0.04f, 0.06f, 0.09f, 0.9f);
 
-        MakeButton("LOW", graphicsPanel.transform, new Vector2(0.2f, 0.5f), new Vector2(100, 70))
-            .onClick.AddListener(() => { ApplyGraphicsPreset(0); graphicsPanel.SetActive(false); });
-        MakeButton("MED", graphicsPanel.transform, new Vector2(0.5f, 0.5f), new Vector2(100, 70))
-            .onClick.AddListener(() => { ApplyGraphicsPreset(1); graphicsPanel.SetActive(false); });
-        MakeButton("HIGH", graphicsPanel.transform, new Vector2(0.8f, 0.5f), new Vector2(100, 70))
-            .onClick.AddListener(() => { ApplyGraphicsPreset(2); graphicsPanel.SetActive(false); });
+        MakeButton("LOW", graphicsPanel.transform, new Vector2(0.2f, 0.76f), new Vector2(105, 62))
+            .onClick.AddListener(() => ApplyGraphicsPreset(0));
+        MakeButton("MED", graphicsPanel.transform, new Vector2(0.5f, 0.76f), new Vector2(105, 62))
+            .onClick.AddListener(() => ApplyGraphicsPreset(1));
+        MakeButton("HIGH", graphicsPanel.transform, new Vector2(0.8f, 0.76f), new Vector2(105, 62))
+            .onClick.AddListener(() => ApplyGraphicsPreset(2));
+
+        Text volumeLabel = MakeText("Volume Label", graphicsPanel.transform,
+            new Vector2(0.5f, 0.40f), new Vector2(340, 42), 22);
+        volumeLabel.text = "MASTER VOLUME";
+        volumeLabel.color = Color.white;
+
+        GameObject sliderObject = new GameObject("Master Volume Slider",
+            typeof(RectTransform), typeof(Image), typeof(Slider));
+        sliderObject.transform.SetParent(graphicsPanel.transform, false);
+        RectTransform sliderRect = sliderObject.GetComponent<RectTransform>();
+        sliderRect.anchorMin = new Vector2(0.5f, 0.19f);
+        sliderRect.anchorMax = new Vector2(0.5f, 0.19f);
+        sliderRect.pivot = new Vector2(0.5f, 0.5f);
+        sliderRect.sizeDelta = new Vector2(320, 28);
+        Image sliderImage = sliderObject.GetComponent<Image>();
+        sliderImage.color = new Color(0.85f, 0.88f, 0.92f, 0.9f);
+        volumeSlider = sliderObject.GetComponent<Slider>();
+        volumeSlider.minValue = 0f;
+        volumeSlider.maxValue = 1f;
+        volumeSlider.value = PlayerPrefs.GetFloat(VolumeKey, 0.8f);
+        volumeSlider.onValueChanged.AddListener(SetMasterVolume);
         graphicsPanel.SetActive(false);
     }
 
@@ -91,13 +119,25 @@ public class TomJerryPolishDirector : MonoBehaviour
             missionText.text = "MISSION: Collect cheese (" + cheese + "/" + cheeseGoal + ") and bait the mousetrap.";
     }
 
-    private void ApplyGraphicsPreset(int preset)
+    private void SetMasterVolume(float value)
+    {
+        AudioListener.volume = Mathf.Clamp01(value);
+        PlayerPrefs.SetFloat(VolumeKey, AudioListener.volume);
+        PlayerPrefs.Save();
+    }
+
+    private void ApplyGraphicsPreset(int preset, bool save = true)
     {
         int level = Mathf.Clamp(preset, 0, Mathf.Max(0, QualitySettings.names.Length - 1));
         QualitySettings.SetQualityLevel(level, true);
         QualitySettings.shadowDistance = preset == 0 ? 18f : (preset == 1 ? 35f : 60f);
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = preset == 0 ? 30 : 60;
+        if (save)
+        {
+            PlayerPrefs.SetInt(GraphicsKey, preset);
+            PlayerPrefs.Save();
+        }
     }
 
     private void PlayTone(float frequency, float duration)
