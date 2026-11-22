@@ -3,14 +3,17 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
-/// Runtime Android HUD: left movement joystick, right swipe-look area and USE button.
-/// Add to an active scene object or let PlayableHouseDemo add it automatically.
+/// Runtime Android HUD: left movement joystick, right swipe-look area, objective
+/// counter and USE button. Add to an active scene object or let the demo add it.
 /// </summary>
 public class MobileFirstPersonHUD : MonoBehaviour
 {
     [SerializeField] private MousePlayerController player;
     [SerializeField] private CharacterHandPickup pickup;
     [SerializeField] private bool buildOnStart = true;
+
+    private Text objectiveLabel;
+    private MouseCheeseCounter cheeseCounter;
 
     public void Configure(MousePlayerController target, CharacterHandPickup handPickup)
     {
@@ -26,6 +29,17 @@ public class MobileFirstPersonHUD : MonoBehaviour
         Build();
     }
 
+    private void Update()
+    {
+        if (objectiveLabel == null) return;
+
+        int cheese = cheeseCounter != null ? cheeseCounter.TotalCheese : 0;
+        string task = pickup != null && pickup.HasItem
+            ? "Bait in hand! Aim at the mousetrap and tap USE."
+            : "Find cheese, pick it up, then bait the mousetrap.";
+        objectiveLabel.text = "CHEESE: " + cheese + "    |    " + task;
+    }
+
     [ContextMenu("Build Mobile HUD")]
     public void Build()
     {
@@ -36,6 +50,8 @@ public class MobileFirstPersonHUD : MonoBehaviour
             Debug.LogWarning("MobileFirstPersonHUD: assign a MousePlayerController.");
             return;
         }
+
+        cheeseCounter = player.GetComponent<MouseCheeseCounter>();
 
         Transform oldHud = transform.Find("Generated Mobile HUD");
         if (oldHud != null)
@@ -56,6 +72,13 @@ public class MobileFirstPersonHUD : MonoBehaviour
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
         scaler.matchWidthOrHeight = 0.5f;
+
+        objectiveLabel = MakeText("Objective", root.transform,
+            new Vector2(0.5f, 0.94f), new Vector2(1120, 76), 26);
+        objectiveLabel.alignment = TextAnchor.MiddleCenter;
+        objectiveLabel.color = Color.white;
+        objectiveLabel.fontStyle = FontStyle.Bold;
+        objectiveLabel.text = "Find cheese and bait the mousetrap.";
 
         Image joystickBase = MakeImage("Move Joystick", root.transform,
             new Vector2(0.14f, 0.16f), new Vector2(150, 150),
@@ -80,19 +103,11 @@ public class MobileFirstPersonHUD : MonoBehaviour
             button.targetGraphic = buttonImage;
             button.onClick.AddListener(pickup.Interact);
 
-            GameObject labelObject = new GameObject("Label", typeof(RectTransform), typeof(Text));
-            labelObject.transform.SetParent(buttonImage.transform, false);
-            RectTransform labelRect = labelObject.GetComponent<RectTransform>();
-            labelRect.anchorMin = Vector2.zero;
-            labelRect.anchorMax = Vector2.one;
-            labelRect.offsetMin = Vector2.zero;
-            labelRect.offsetMax = Vector2.zero;
-            Text label = labelObject.GetComponent<Text>();
+            Text label = MakeText("Label", buttonImage.transform,
+                new Vector2(0.5f, 0.5f), new Vector2(132, 104), 28);
             label.text = "USE";
-            label.alignment = TextAnchor.MiddleCenter;
-            label.fontSize = 28;
-            label.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
             label.color = new Color(0.12f, 0.10f, 0.08f);
+            label.fontStyle = FontStyle.Bold;
         }
 
         Debug.Log("Tom & Jerry 3D mobile HUD created.");
@@ -112,6 +127,25 @@ public class MobileFirstPersonHUD : MonoBehaviour
         image.color = color;
         image.raycastTarget = true;
         return image;
+    }
+
+    private static Text MakeText(string objectName, Transform parent, Vector2 anchor, Vector2 size, int fontSize)
+    {
+        GameObject obj = new GameObject(objectName, typeof(RectTransform), typeof(Text));
+        obj.transform.SetParent(parent, false);
+        RectTransform rect = obj.GetComponent<RectTransform>();
+        rect.anchorMin = anchor;
+        rect.anchorMax = anchor;
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = Vector2.zero;
+        rect.sizeDelta = size;
+
+        Text label = obj.GetComponent<Text>();
+        label.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        label.fontSize = fontSize;
+        label.alignment = TextAnchor.MiddleCenter;
+        label.raycastTarget = false;
+        return label;
     }
 
     private static void EnsureEventSystem()
