@@ -23,11 +23,13 @@ public class FridgeFoodDispenser : MonoBehaviour
     {
         isOpen = !isOpen;
         if (door != null)
-            door.localRotation = Quaternion.Euler(0f, isOpen ? openAngle : 0f, 0f) * Quaternion.identity;
+            door.localRotation = Quaternion.Euler(0f, isOpen ? openAngle : 0f, 0f);
+
         if (isOpen && foodPrefab != null)
         {
             Transform spawn = foodSpawn != null ? foodSpawn : transform;
-            GameObject food = Instantiate(foodPrefab, spawn.position, spawn.rotation);\n            food.SetActive(true);
+            GameObject foodItem = Instantiate(foodPrefab, spawn.position, spawn.rotation);
+            foodItem.SetActive(true);
         }
     }
 }
