@@ -1,27 +1,23 @@
-# TomJerry3D — Android Unity prototype
+# TomJerry3D — first-person Unity demo
 
-A first-person 3D cartoon chase prototype. Play as a small mouse exploring a house while a cat patrols, spots the player, chases and searches.
+A playable scene prototype: explore a connected house as a mouse in first person while a cartoon cat patrols, spots the player and chases. The scene is generated from Unity scripts and includes touch controls.
 
-## Included
-- First-person mouse movement and camera look
-- Runtime Android HUD: left movement joystick, right swipe-to-look area and USE button
-- Cat patrol/chase/search AI using Unity NavMesh
-- Procedural house blockout: living room, kitchen, hallway, bedroom and storage
-- Procedural placeholder mouse and cat characters
-- Cheese pickups and a counter
-- Carry/drop interactions, fridge food dispenser and baitable mousetrap
-- Cartoon slapstick: Tom knocks over harmless props and gets sent outside after making a mess
+## Quick start
+1. Create a Unity 3D project (Unity 6 recommended).
+2. Copy `TomJerry3D/Scripts` into `Assets/TomJerry3D/Scripts`.
+3. Copy `TomJerry3D/Editor/CreateTomJerryDemoScene.cs` into `Assets/Editor/`.
+4. In Unity choose **Tools → Tom & Jerry 3D → Create Playable Demo Scene**.
+5. Open `Assets/TomJerry3D/Scenes/TomJerryDemo.unity` and press Play.
 
-## Unity setup
-1. Open or create a Unity 3D URP project in Unity 6.
-2. Copy the TomJerry3D folder into Assets/.
-3. Follow GAMEPLAY_SETUP.md to wire the player camera, mobile HUD, NavMesh and gameplay components.
-4. Add original or properly licensed 3D assets, animations, sounds and scene lighting before release.
-5. Configure Android Build Support and build an APK from Unity Editor.
+Full steps and controls: [GAMEPLAY_SETUP.md](GAMEPLAY_SETUP.md).
 
-## Controls
-- Android: left virtual joystick to move, swipe the right side to look, USE to interact/pick up/drop.
-- Unity Editor: WASD/arrow keys and mouse look; E to interact.
+## Included gameplay
+- First-person mouse movement and camera look.
+- Runtime Android HUD with movement joystick, swipe-look and USE button.
+- Procedurally generated connected house and runtime NavMesh.
+- Procedural cartoon cat placeholder with patrol, sight detection, chase and search.
+- Carry/drop items, kitchen fridge food dispenser and baitable mousetrap.
+- Collectible cheese and cartoon prop chaos; Tom gets sent to the porch briefly after enough mess.
 
 ## Status
-This is a script-based prototype, not a ready-to-install APK. A Unity scene, final character models, animation rig, audio, baked NavMesh and device testing are still required.
+This is a playable prototype scene generator, not a finished commercial game. Final 3D assets, animation, sound, polish, device testing and Android APK export remain to be done. The project uses C# for Unity gameplay scripts; Kotlin is only suitable for separate native Android modules.
