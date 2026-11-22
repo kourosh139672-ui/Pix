@@ -26,19 +26,37 @@ jobs:
 
       - name: Prepare Android signing and SDK
         run: |
-          set -eu
+          set -eux
           SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
           test -n "$SDK"
+          SDK="$(realpath "$SDK")"
           JAVA_DIR="$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")"
           echo "JAVA_HOME=$JAVA_DIR" >> "$GITHUB_ENV"
-          command -v sdkmanager >/dev/null 2>&1 || export PATH="$SDK/cmdline-tools/latest/bin:$SDK/tools/bin:$PATH"
-          yes | sdkmanager --licenses >/dev/null 2>&1 || true
-          sdkmanager "platforms;android-33" "platforms;android-35" "build-tools;33.0.2" "build-tools;35.0.0" "platform-tools"
-          mkdir -p /root/.android
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+
+          # Always install into the exact SDK directory that Godot will use.
+          if [ -x "$SDK/cmdline-tools/latest/bin/sdkmanager" ]; then
+            SDKMANAGER="$SDK/cmdline-tools/latest/bin/sdkmanager"
+          else
+            SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager 2>/dev/null | sort | tail -n 1)"
+          fi
+          test -n "$SDKMANAGER"
+          chmod +x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --sdk_root="$SDK" --licenses >/dev/null 2>&1 || true
+          "$SDKMANAGER" --sdk_root="$SDK" "cmdline-tools;latest" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+          # Fail early with a useful message if the packages went into another SDK.
+          test -d "$SDK/platforms/android-35"
+          test -x "$SDK/build-tools/35.0.0/aapt"
+          test -x "$SDK/build-tools/35.0.0/aapt2"
+          ls -la "$SDK/build-tools"
+          ls -la "$SDK/platforms"
+
+          mkdir -p /root/.android /root/.config/godot
           if [ ! -f /root/.android/debug.keystore ]; then
             keytool -genkeypair -v -keystore /root/.android/debug.keystore -storepass android -alias androiddebugkey -keypass android -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
           fi
-          mkdir -p /root/.config/godot
           cat > /root/.config/godot/editor_settings-4.tres <<EOF
           [gd_resource type="EditorSettings" format=3]
 
@@ -46,6 +64,7 @@ jobs:
           export/android/java_sdk_path = "$JAVA_DIR"
           export/android/android_sdk_path = "$SDK"
           EOF
+          cat /root/.config/godot/editor_settings-4.tres
 
       - name: Prepare Godot export templates
         run: |
