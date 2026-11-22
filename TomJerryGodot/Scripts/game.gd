@@ -455,9 +455,9 @@ func _update_hud() -> void:
 		elif game_over:
 			mission_label.text = "TOM CAUGHT JERRY! Tap RESTART."
 		elif cheese_count < 3:
-			mission_label.text = "Find 3 pieces of cheese."
+			mission_label.text = "Find 3 cheeses. USE near the ball or pillow to pick it up."
 		elif not trap_baited:
-			mission_label.text = "Go to the mousetrap and tap USE."
+			mission_label.text = "Bait the mousetrap with USE. Throw a soft item to distract Tom!"
 		else:
 			mission_label.text = "Trap baited! Lead Tom to the trap."
 
@@ -525,6 +525,8 @@ func _throw_held_item() -> void:
 	projectile.name = "Thrown" + held_item_name.replace(" ", "")
 	projectile.mass = 0.45
 	projectile.continuous_cd = true
+	projectile.contact_monitor = true
+	projectile.max_contacts_reported = 4
 	var mesh_instance := MeshInstance3D.new()
 	if held_item_name == "Squeaky Ball":
 		var sphere := SphereMesh.new()
@@ -545,6 +547,7 @@ func _throw_held_item() -> void:
 	collision.shape = shape
 	projectile.add_child(collision)
 	add_child(projectile)
+	projectile.add_collision_exception_with(player)
 	projectile.global_position = camera.global_position + (-camera.global_basis.z * 0.9)
 	projectile.linear_velocity = (-camera.global_basis.z * 10.0) + Vector3.UP * 2.0
 	projectile.body_entered.connect(_on_thrown_item_body_entered.bind(projectile))
