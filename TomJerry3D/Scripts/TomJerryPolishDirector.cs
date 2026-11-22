@@ -71,8 +71,8 @@ public class TomJerryPolishDirector : MonoBehaviour
         graphicsPanel = new GameObject("Graphics Presets", typeof(RectTransform), typeof(Image));
         graphicsPanel.transform.SetParent(root.transform, false);
         RectTransform panelRect = graphicsPanel.GetComponent<RectTransform>();
-        panelRect.anchorMin = new Vector2(0.08f, 0.78f);
-        panelRect.anchorMax = new Vector2(0.08f, 0.78f);
+        panelRect.anchorMin = new Vector2(0.16f, 0.78f);
+        panelRect.anchorMax = new Vector2(0.16f, 0.78f);
         panelRect.sizeDelta = new Vector2(410, 270);
         graphicsPanel.GetComponent<Image>().color = new Color(0.04f, 0.06f, 0.09f, 0.9f);
 
@@ -99,6 +99,16 @@ public class TomJerryPolishDirector : MonoBehaviour
         Image sliderImage = sliderObject.GetComponent<Image>();
         sliderImage.color = new Color(0.85f, 0.88f, 0.92f, 0.9f);
         volumeSlider = sliderObject.GetComponent<Slider>();
+        GameObject handleObject = new GameObject("Volume Handle", typeof(RectTransform), typeof(Image));
+        handleObject.transform.SetParent(sliderObject.transform, false);
+        RectTransform handleRect = handleObject.GetComponent<RectTransform>();
+        handleRect.anchorMin = new Vector2(0.5f, 0.5f);
+        handleRect.anchorMax = new Vector2(0.5f, 0.5f);
+        handleRect.sizeDelta = new Vector2(38, 38);
+        Image handleImage = handleObject.GetComponent<Image>();
+        handleImage.color = new Color(0.96f, 0.67f, 0.18f, 1f);
+        volumeSlider.handleRect = handleRect;
+        volumeSlider.targetGraphic = handleImage;
         volumeSlider.minValue = 0f;
         volumeSlider.maxValue = 1f;
         volumeSlider.value = PlayerPrefs.GetFloat(VolumeKey, 0.8f);
