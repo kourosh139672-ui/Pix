@@ -58,6 +58,11 @@ jobs:
           if [ ! -f "$HOME/.android/debug.keystore" ]; then
             keytool -genkeypair -v -keystore "$HOME/.android/debug.keystore" -storepass android -alias androiddebugkey -keypass android -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
           fi
+          # The Android export preset currently points to /root/.android/debug.keystore.
+          # Keep that legacy preset path valid while storing the real key under HOME.
+          mkdir -p /root/.android
+          ln -sf "$HOME/.android/debug.keystore" /root/.android/debug.keystore
+          test -s /root/.android/debug.keystore
           cat > "$HOME/.config/godot/editor_settings-4.tres" <<EOF
           [gd_resource type="EditorSettings" format=3]
 
