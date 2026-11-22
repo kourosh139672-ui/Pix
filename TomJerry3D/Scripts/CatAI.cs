@@ -2,8 +2,8 @@ using UnityEngine;
 using UnityEngine.AI;
 
 /// <summary>
-/// Basic cat AI: patrols between points, chases the mouse when seen,
-/// then searches the last known position. Requires a baked/runtime NavMesh.
+/// Cat AI with patrol, visual pursuit and a timed last-known-position search.
+/// Search ends when Tom reaches the clue and looks around, or when its timer expires.
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 public class CatAI : MonoBehaviour
@@ -18,19 +18,22 @@ public class CatAI : MonoBehaviour
     [SerializeField] private float sightDistance = 9f;
     [SerializeField, Range(1f, 180f)] private float fieldOfView = 100f;
     [SerializeField] private float eyeHeight = 0.8f;
+    [SerializeField] private float targetHeight = 0.5f;
     [SerializeField] private LayerMask lineOfSightMask = ~0;
 
     [Header("Movement")]
     [SerializeField] private float patrolSpeed = 1.8f;
     [SerializeField] private float chaseSpeed = 3.8f;
-    [SerializeField] private float searchDuration = 3f;
+    [SerializeField] private float searchDuration = 4.5f;
     [SerializeField] private float arriveDistance = 0.6f;
+    [SerializeField] private float searchTurnSpeed = 100f;
 
     private NavMeshAgent agent;
     private State state = State.Patrol;
     private int patrolIndex;
     private Vector3 lastKnownPosition;
     private float searchTimer;
+    private float searchTurn;
     private float stunnedUntil;
 
     private void Awake()
@@ -48,7 +51,6 @@ public class CatAI : MonoBehaviour
     private void Update()
     {
         if (agent == null || !agent.enabled || !agent.isOnNavMesh) return;
-
         if (Time.time < stunnedUntil)
         {
             agent.isStopped = true;
@@ -57,7 +59,6 @@ public class CatAI : MonoBehaviour
 
         agent.isStopped = false;
         bool seesPlayer = CanSeePlayer();
-
         if (seesPlayer)
         {
             state = State.Chase;
@@ -75,12 +76,13 @@ public class CatAI : MonoBehaviour
                 {
                     state = State.Search;
                     searchTimer = searchDuration;
+                    searchTurn = 0f;
+                    agent.isStopped = false;
                     agent.SetDestination(lastKnownPosition);
                 }
                 break;
             case State.Search:
-                searchTimer -= Time.deltaTime;
-                if (searchTimer <= 0f) state = State.Patrol;
+                Search();
                 break;
         }
     }
@@ -89,14 +91,14 @@ public class CatAI : MonoBehaviour
     {
         if (player == null) return false;
         Vector3 origin = transform.position + Vector3.up * eyeHeight;
-        Vector3 target = player.position + Vector3.up * 0.5f;
+        Vector3 target = player.position + Vector3.up * targetHeight;
         Vector3 toPlayer = target - origin;
-
-        if (toPlayer.magnitude > sightDistance) return false;
+        float distance = toPlayer.magnitude;
+        if (distance > sightDistance || distance < 0.01f) return false;
         if (Vector3.Angle(transform.forward, toPlayer) > fieldOfView * 0.5f) return false;
 
         if (Physics.Raycast(origin, toPlayer.normalized, out RaycastHit hit,
-                sightDistance, lineOfSightMask, QueryTriggerInteraction.Ignore))
+                distance + 0.1f, lineOfSightMask, QueryTriggerInteraction.Ignore))
             return hit.transform == player || hit.transform.IsChildOf(player);
 
         return false;
@@ -106,16 +108,19 @@ public class CatAI : MonoBehaviour
     {
         agent.speed = patrolSpeed;
         if (patrolPoints == null || patrolPoints.Length == 0) return;
+        if (agent.pathPending) return;
 
-        if (!agent.pathPending && agent.hasPath && agent.remainingDistance <= arriveDistance)
+        if (!agent.hasPath || agent.remainingDistance <= arriveDistance)
         {
-            patrolIndex = (patrolIndex + 1) % patrolPoints.Length;
-            if (patrolPoints[patrolIndex] != null)
-                agent.SetDestination(patrolPoints[patrolIndex].position);
-        }
-        else if (!agent.hasPath && patrolPoints[patrolIndex] != null)
-        {
-            agent.SetDestination(patrolPoints[patrolIndex].position);
+            for (int attempt = 0; attempt < patrolPoints.Length; attempt++)
+            {
+                patrolIndex = (patrolIndex + 1) % patrolPoints.Length;
+                if (patrolPoints[patrolIndex] != null)
+                {
+                    agent.SetDestination(patrolPoints[patrolIndex].position);
+                    break;
+                }
+            }
         }
     }
 
@@ -123,7 +128,27 @@ public class CatAI : MonoBehaviour
     {
         if (player == null) return;
         agent.speed = chaseSpeed;
+        agent.isStopped = false;
         agent.SetDestination(player.position);
+    }
+
+    private void Search()
+    {
+        agent.speed = patrolSpeed * 0.85f;
+        searchTimer -= Time.deltaTime;
+        if (!agent.pathPending && (!agent.hasPath || agent.remainingDistance <= arriveDistance))
+        {
+            agent.isStopped = true;
+            transform.Rotate(Vector3.up, searchTurnSpeed * Time.deltaTime);
+            searchTurn += searchTurnSpeed * Time.deltaTime;
+            if (searchTurn >= 300f) searchTimer = Mathf.Min(searchTimer, 0.5f);
+        }
+        if (searchTimer <= 0f)
+        {
+            agent.isStopped = false;
+            state = State.Patrol;
+            agent.ResetPath();
+        }
     }
 
     public void Stun(float seconds)
