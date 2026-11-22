@@ -15,7 +15,7 @@ This is a Unity C# prototype. The included Editor command creates a saved scene;
 - Android HUD created at runtime: left joystick, right swipe-to-look area, objective instructions, cheese counter, USE button, start screen and pause menu.
 - The objective HUD updates when Jerry collects cheese or carries food toward the mousetrap.
 - Start screen pauses the game until PLAY is tapped. PAUSE opens a pause overlay with RESUME and RESTART; Escape toggles pause in the Unity Editor.
-- Procedural cartoon Tom with procedural walk bounce, body sway, head and tail animation, plus patrol/chase/search AI.
+- Procedural cartoon Tom with procedural walk bounce, body sway, head and tail animation, plus patrol/chase/search AI. Jerry's first-person paw also has a small idle animation.
 - Mission progression: collect three cheese pieces, bait the mousetrap, and receive a completion message.
 - Generated cartoon sound cues for collecting cheese and arming the trap.
 - On-screen LOW / MED / HIGH graphics presets with frame-rate and shadow-distance adjustments.
