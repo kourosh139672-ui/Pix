@@ -41,6 +41,7 @@ public class PlayableHouseDemo : MonoBehaviour
         houseRoot.SetParent(transform, false);
 
         BuildHouseGeometry();
+        houseRoot.gameObject.AddComponent<HouseDecorationBuilder>();
         if (buildNavigationAtRuntime) BuildNavMesh();
 
         Transform player = BuildPlayer();
