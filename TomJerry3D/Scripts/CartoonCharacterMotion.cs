@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 /// <summary>
 /// Lightweight procedural animation for the generated Tom model. Adds a soft
