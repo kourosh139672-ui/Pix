@@ -11,6 +11,7 @@ This is a Unity C# prototype. The Editor command creates a saved scene; the scen
 
 ## What the demo builds
 - Connected house layout with living room, kitchen, hallway, bedroom, storage and a front porch.
+- Generated decorative details: framed windows, wall pictures, a dining table and chairs, indoor plants and ceiling beams.
 - First-person mouse camera and CharacterController.
 - Android HUD created at runtime: left joystick, right swipe-to-look area, objective instructions, cheese counter, USE button, start screen and pause menu.
 - Objective HUD updates when Jerry collects cheese or carries food toward the mousetrap.
