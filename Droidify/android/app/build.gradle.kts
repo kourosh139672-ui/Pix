@@ -1,6 +1,10 @@
 plugins {
     id("com.android.application")
 }
+
+dependencies {
+    implementation("androidx.webkit:webkit:1.12.1")
+}
 android {
     namespace = "com.kourosh.droidify"
     compileSdk = 35
