@@ -1,14 +1,16 @@
-# PixPhone
+# PixPhone S100
 
-PixPhone is an experimental Android-based operating-system project hosted in Pix.
+PixPhone is an experimental Android-based project targeting a hypothetical device named **S100**.
 
-## Scope
-- No built-in AI assistant
-- Custom phone UI and settings
-- APK installation/launch is a goal, requiring a compatible Android runtime/base
-- App store is not bundled; it can be installed separately by the user
+## Current milestone
+A minimal Kotlin Android app prototype is included to begin shaping the PixPhone interface.
 
-## Status
-This repository currently contains the project plan and architecture notes, not a complete OS or installable ROM.
+- No built-in AI assistant.
+- Google Play is not bundled.
+- APK support depends on the Android base/runtime.
+- This repository is **not yet a bootable ROM or complete OS**.
 
-See `docs/ROADMAP.md`.
+## Build the prototype
+Open the repository in Android Studio and sync Gradle. Build and run the app on a compatible Android device or emulator.
+
+See [S100 target notes](docs/S100-DEVICE.md) and [roadmap](docs/ROADMAP.md).
