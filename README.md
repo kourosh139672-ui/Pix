@@ -1,18 +1,14 @@
-# TomJerry3D
+# PixPhone
 
-پروژهٔ بازی سه‌بعدی اول‌شخص با الهام از تعقیب‌وگریز کارتونی موش و گربه.
+PixPhone is an experimental Android-based operating-system project hosted in Pix.
 
-## موتور و پلتفرم
-- Unity 2022 LTS یا جدیدتر
-- C# و Unity 3D؛ در صورت نیاز URP
-- هدف: Android
+## Scope
+- No built-in AI assistant
+- Custom phone UI and settings
+- APK installation/launch is a goal, requiring a compatible Android runtime/base
+- App store is not bundled; it can be installed separately by the user
 
-## ساختار
-- `TomJerry3D/`: کدهای بازی
-- `TomJerry3D/Scripts/`: کنترل جری، هوش مصنوعی تام، پنیر و تله
+## Status
+This repository currently contains the project plan and architecture notes, not a complete OS or installable ROM.
 
-## وضعیت
-کدهای پایه در مخزن قرار دارند. هنوز صحنهٔ Unity، مدل‌ها، انیمیشن‌ها، رابط لمسی و APK ساخته نشده‌اند. برای اجرای پروژه و خروجی اندروید به Unity Editor و Android Build Support نیاز است.
-
-## شروع
-در Unity یک پروژهٔ 3D بسازید، اسکریپت‌های پوشهٔ `TomJerry3D/Scripts` را به Assets منتقل کنید و طبق راهنمای همان پوشه اجزای صحنه را تنظیم کنید.
+See `docs/ROADMAP.md`.
